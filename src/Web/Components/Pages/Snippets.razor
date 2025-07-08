@@ -1,63 +1,81 @@
 @page "/snippets"
 @inject HttpClient Http
+@inject UserState UserState
+@using Application.AuthService
 @using Application.DTOs
 
-<div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="fw-bold mb-0">Code Snippets</h2>
-        <a class="btn btn-primary shadow-sm" href="/snippets/new">
-            <i class="bi bi-plus-lg"></i> New Snippet
-        </a>
+@if (!UserState.IsAuthenticated)
+{
+    <div class="container mt-5">
+        <div class="alert alert-warning">
+            Please <a href="/login">login</a> to see your snippets.
+        </div>
     </div>
-
-    @if (snippets == null)
-    {
-        <div class="text-center text-secondary mt-5">
-            <div class="spinner-border" role="status"></div>
-            <p class="mt-2"><em>Loading snippets...</em></p>
+}
+else
+{
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="fw-bold mb-0">Code Snippets</h2>
+            <a class="btn btn-primary shadow-sm" href="/snippets/new">
+                <i class="bi bi-plus-lg"></i> New Snippet
+            </a>
         </div>
-    }
-    else if (!snippets.Any())
-    {
-        <div class="alert alert-info mt-4">
-            No snippets found. <a href="/snippets/new">Create the first one!</a>
-        </div>
-    }
-    else
-    {
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-            @foreach (var s in snippets)
-            {
-                <div class="col">
-                    <div class="card h-100 shadow-sm border-0">
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title fw-semibold mb-2">@s.Title</h5>
-                            <p class="card-text text-truncate" style="max-width: 90%;"><small>@s.Content</small></p>
-                            <div class="mt-auto d-flex justify-content-between align-items-end">
-                                <span class="text-muted small">@s.CreatedAt.ToShortDateString()</span>
-                                <div>
-                                    <a class="btn btn-outline-info btn-sm me-2" href="/snippets/@s.Id">
-                                        <i class="bi bi-pencil-square"></i> Edit
-                                    </a>
-                                    <button class="btn btn-outline-danger btn-sm" @onclick="() => DeleteSnippet(s.Id)">
-                                        <i class="bi bi-trash"></i> Delete
-                                    </button>
+        @if (snippets == null)
+        {
+            <div class="text-center text-secondary mt-5">
+                <div class="spinner-border" role="status"></div>
+                <p class="mt-2"><em>Loading snippets...</em></p>
+            </div>
+        }
+        else if (!snippets.Any())
+        {
+            <div class="alert alert-info mt-4">
+                No snippets found. <a href="/snippets/new">Create the first one!</a>
+            </div>
+        }
+        else
+        {
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                @foreach (var s in snippets)
+                {
+                    <div class="col">
+                        <div class="card h-100 shadow-sm border-0">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title fw-semibold mb-2">@s.Title</h5>
+                                <p class="card-text text-truncate" style="max-width: 90%;"><small>@s.Content</small></p>
+                                <div class="mt-auto d-flex justify-content-between align-items-end">
+                                    <span class="text-muted small">@s.CreatedAt.ToShortDateString()</span>
+                                    <div>
+                                        <a class="btn btn-outline-info btn-sm me-2" href="/snippets/@s.Id">
+                                            <i class="bi bi-pencil-square"></i> Edit
+                                        </a>
+                                        <button class="btn btn-outline-danger btn-sm" @onclick="() => DeleteSnippet(s.Id)">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            }
-        </div>
-    }
-</div>
+                }
+            </div>
+        }
+    </div>
+}
 
 @code {
     private List<SnippetDto>? snippets;
 
     protected override async Task OnInitializedAsync()
     {
-        var ownerId = "c2ed3f7a-57e7-4d1c-92b4-fc4bb1006e11";
+        if (!UserState.IsAuthenticated)
+            return;
+        var ownerId = UserState.User?.Id.ToString();
+        if (ownerId is null)
+            return;
+        Http.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", UserState.Token);
         snippets = await Http.GetFromJsonAsync<List<SnippetDto>>($"/api/snippets?ownerId={ownerId}");
     }
 

@@ -1,0 +1,80 @@
+@page "/register"
+@inject HttpClient Http
+@inject NavigationManager NavManager
+@inject UserState UserState
+
+@using Application.AuthService
+@using Application.DTOs
+@using Application.Features.Auth.Commands
+
+<div class="container mt-5" style="max-width: 450px;">
+    <h3 class="fw-bold mb-4">Register</h3>
+
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <div class="alert alert-danger">@error</div>
+    }
+
+    <EditForm Model="register" OnValidSubmit="HandleRegister" FormName="registerForm">
+        <div class="mb-3">
+            <label>Username</label>
+            <input class="form-control" @bind="register.Username" autocomplete="username" />
+        </div>
+        <div class="mb-3">
+            <label>Password</label>
+            <input class="form-control" type="password" @bind="register.Password" autocomplete="new-password" />
+        </div>
+        <div class="mb-3">
+            <label>Email</label>
+            <input class="form-control" type="email" @bind="register.Email" autocomplete="email" />
+        </div>
+        <div class="mb-3">
+            <label>Avatar URL (optional)</label>
+            <input class="form-control" @bind="register.AvatarUrl" />
+        </div>
+        <button class="btn btn-success w-100" type="submit">Register</button>
+        <div class="text-center mt-3">
+            <a href="/login">Already have an account? Login</a>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    private RegisterUserCommand register = new();
+    private string? error;
+
+    private async Task HandleRegister()
+    {
+        error = null;
+
+        if (string.IsNullOrWhiteSpace(register.Username) ||
+            string.IsNullOrWhiteSpace(register.Password) ||
+            string.IsNullOrWhiteSpace(register.Email))
+        {
+            error = "Please fill in all required fields!";
+            StateHasChanged();
+            return;
+        }
+
+        var response = await Http.PostAsJsonAsync("/api/auth/register", register);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            error = "Could not register, try again.";
+            return;
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<AuthResult>();
+        if (result is not null)
+        {
+            UserState.SetAuth(result.token, result.user);
+            NavManager.NavigateTo("/snippets", true);
+        }
+    }
+
+    public class AuthResult
+    {
+        public string token { get; set; }
+        public UserDto user { get; set; }
+    }
+}

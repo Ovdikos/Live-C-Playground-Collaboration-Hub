@@ -1,10 +1,10 @@
 ﻿using Application.DTOs;
 using Application.Features.CodeSnippets.Queries;
+using AutoMapper;
 using Core.Interfaces;
 using MediatR;
-using AutoMapper;
 
-namespace Application.Features.CodeSnippets.Handlers;
+namespace Application.Features.CodeSnippets.Handlers.QueryHandler;
 
 public class GetAllCodeSnippetsQueryHandler
     : IRequestHandler<GetAllCodeSnippetsQuery, IEnumerable<SnippetDto>>

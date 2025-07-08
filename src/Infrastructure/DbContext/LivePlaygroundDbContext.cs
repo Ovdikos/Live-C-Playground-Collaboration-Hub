@@ -54,7 +54,7 @@ public class LivePlaygroundDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.HasOne(p => p.Session)
                 .WithMany(s => s.Participants)
                 .HasForeignKey(p => p.SessionId)
-                .OnDelete(DeleteBehavior.Cascade); // тут залишаємо, якщо треба каскад
+                .OnDelete(DeleteBehavior.Cascade); 
 
             entity.HasOne(p => p.User)
                 .WithMany(u => u.Sessions)

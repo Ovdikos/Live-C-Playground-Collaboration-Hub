@@ -11,6 +11,8 @@ public class CodeSnippet
     public bool IsPublic { get; set; }
     
     public User Owner { get; set; } = default!;
+    
+    // For future (maybe)
     public ICollection<CollabSession> CollabSessions { get; set; } = new List<CollabSession>();
     
 }

@@ -4,6 +4,8 @@
         <FocusOnNavigate RouteData="routeData" Selector="h1"/>
     </Found>
     <NotFound>
-        <p>Page not found!</p>
+        <LayoutView Layout="@typeof(Layout.MainLayout)">
+            <h4>Sorry, page not found!</h4>
+        </LayoutView>
     </NotFound>
 </Router>

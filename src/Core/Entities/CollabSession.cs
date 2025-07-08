@@ -9,6 +9,8 @@ public class CollabSession
     
     
     public CodeSnippet Snippet { get; set; } = default!;
+    
+    // For future (maybe)
     public ICollection<CollabParticipant> Participants { get; set; } = new List<CollabParticipant>();
     
 }
