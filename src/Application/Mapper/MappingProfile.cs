@@ -10,6 +10,7 @@ public class MappingProfile : Profile
     public MappingProfile()
     {
         CreateMap<CodeSnippet, SnippetDto>();
+        CreateMap<User, UserDto>();
     }
     
 }

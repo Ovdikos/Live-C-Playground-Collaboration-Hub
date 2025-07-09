@@ -3,4 +3,7 @@ using MediatR;
 
 namespace Application.Features.Auth.Queries;
 
-public record LoginUserQuery(LoginUserDto Dto) : IRequest<UserDto?>;
+public class LoginUserQuery : IRequest<UserDto>
+{
+    public LoginUserDto Dto { get; init; } = null!;
+}

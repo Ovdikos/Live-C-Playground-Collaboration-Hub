@@ -16,7 +16,7 @@ public class UserRepository : IUserRepository
     }
 
     public async Task<bool> ExistsByUsernameOrEmail(string username, string email) => 
-        await _context.Users.AnyAsync(u => u.UserName == username && u.Email == email);
+        await _context.Users.AnyAsync(u => u.Username == username && u.Email == email);
     
 
     public async Task AddAsync(User user)
@@ -26,7 +26,7 @@ public class UserRepository : IUserRepository
     }
 
     public async Task<User?> GetByUsernameAsync(string username) =>
-        await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
+        await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
 
     public async Task<User?> GetByIdAsync(Guid id) =>
         await _context.Users.FirstOrDefaultAsync(u => u.Id == id);

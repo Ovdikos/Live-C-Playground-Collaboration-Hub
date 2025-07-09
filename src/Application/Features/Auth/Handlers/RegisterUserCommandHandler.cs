@@ -19,19 +19,23 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, U
 
     public async Task<UserDto> Handle(RegisterUserCommand request, CancellationToken ct)
     {
-        if (await _repo.ExistsByUsernameOrEmail(request.Username, request.Email))
+        var dto = request.Dto;
+        if (await _repo.ExistsByUsernameOrEmail(dto.Username, dto.Email))
             throw new Exception("User already exists!");
 
-        if (string.IsNullOrWhiteSpace(request.Password))
+        if (string.IsNullOrWhiteSpace(dto.Password))
             throw new ArgumentException("Password is required");
-
+        
+        var hash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+        
         var user = new User
         {
-            UserName = request.Username,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-            Email = request.Email,
-            AvatarUrl = request.AvatarUrl,
-            CreatedAt = DateTime.UtcNow,
+            Id = Guid.NewGuid(),
+            Username = dto.Username,
+            PasswordHash = hash,
+            Email = dto.Email,
+            AvatarUrl = dto.AvatarUrl,
+            CreatedAt = DateTime.Now,
             IsAdmin = true
         };
         await _repo.AddAsync(user);

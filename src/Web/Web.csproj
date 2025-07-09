@@ -21,4 +21,21 @@
       <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.6" />
     </ItemGroup>
 
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="Components\Pages\Home.razor" />
+      <_ContentIncludedByDefault Remove="Components\Pages\Login.razor" />
+      <_ContentIncludedByDefault Remove="Components\Pages\Register.razor" />
+      <_ContentIncludedByDefault Remove="Components\Pages\Snippets.razor" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AdditionalFiles Include="Pages\App.razor" />
+      <AdditionalFiles Include="Pages\Home.razor" />
+      <AdditionalFiles Include="Pages\Login.razor" />
+      <AdditionalFiles Include="Pages\Register.razor" />
+      <AdditionalFiles Include="Pages\Snippets.razor" />
+      <AdditionalFiles Include="Pages\_Host.cshtml" />
+      <AdditionalFiles Include="Pages\_Imports.razor" />
+    </ItemGroup>
+
 </Project>

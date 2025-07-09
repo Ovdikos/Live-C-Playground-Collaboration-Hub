@@ -18,8 +18,10 @@ public class LoginUserQueryHandler : IRequestHandler<LoginUserQuery, UserDto?>
 
     public async Task<UserDto?> Handle(LoginUserQuery request, CancellationToken ct)
     {
-        var user = await _repo.GetByUsernameAsync(request.Dto.Username);
-        if (user == null || !BCrypt.Net.BCrypt.Verify(request.Dto.Password, user.PasswordHash))
+        var dto = request.Dto;
+        
+        var user = await _repo.GetByUsernameAsync(dto.Username);
+        if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             return null;
         return _mapper.Map<UserDto>(user);
     }

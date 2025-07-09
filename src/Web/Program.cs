@@ -13,15 +13,19 @@ using Infrastructure.Repositories;
 using MediatR;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Web.Components;
+using Web.Pages;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Registering services
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+// builder.Services.AddRazorComponents()
+     // .AddInteractiveServerComponents();
+builder.Services.AddRazorPages();
+builder.Services.AddServerSideBlazor();
 
 builder.Services.AddDbContext<LivePlaygroundDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -50,6 +54,9 @@ builder.Services.AddAutoMapper(cfg =>
 // MediatR
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblyContaining<GetAllCodeSnippetsQuery>());
+
+
+
 
 // Auth
 
@@ -82,23 +89,56 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseAntiforgery();
 
 // Minimal API endpoints
 
+
+// app.MapGet("/test/users/exists", async ([FromQuery] string username, [FromQuery] string email, IUserRepository repo) =>
+// {
+//     var exists = await repo.ExistsByUsernameOrEmail(username, email);
+//     return Results.Ok(new { exists });
+// });
+//
+// app.MapPost("/test/users/add", async ([FromBody] RegisterUserDto dto, IUserRepository repo) =>
+// {
+//     var user = new Core.Entities.User
+//     {
+//         Username     = dto.Username,
+//         Email        = dto.Email,
+//         PasswordHash = "dummy",   // тимчасово
+//         CreatedAt    = DateTime.UtcNow,
+//         IsAdmin      = false
+//     };
+//     await repo.AddAsync(user);
+//     return Results.Created($"/test/users/{user.Id}", user);
+// });
+
+
 // REGISTER
-app.MapPost("/api/auth/register", async (IMediator mediator, IJwtTokenService jwt, [FromBody] RegisterUserCommand dto) =>
+app.MapPost("/api/auth/register", async (
+    [FromBody] RegisterUserDto dto,
+    IMediator mediator,
+    IJwtTokenService jwt) =>
 {
-    var user = await mediator.Send(dto); 
+    var cmd = new RegisterUserCommand { Dto = dto };
+    var user = await mediator.Send(cmd);
     var token = jwt.GenerateToken(user);
     return Results.Ok(new { token, user });
 });
 
 // LOGIN
-app.MapPost("/api/auth/login", async (IMediator mediator, IJwtTokenService jwt, LoginUserDto dto) =>
+app.MapPost("/api/auth/login", async (
+    [FromBody] LoginUserDto dto,
+    IMediator mediator,
+    IJwtTokenService jwt) =>
 {
-    var user = await mediator.Send(new LoginUserQuery(dto));
-    if (user is null)
+    var qry = new LoginUserQuery { Dto = dto };
+    var user = await mediator.Send(qry);
+    if (user is null) 
         return Results.Unauthorized();
     var token = jwt.GenerateToken(user);
     return Results.Ok(new { token, user });
@@ -114,7 +154,10 @@ app.MapGet("/api/snippets", async (IMediator mediator, Guid ownerId) =>
 });
 
 
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+// app.MapRazorComponents<App>()
+     // .AddInteractiveServerRenderMode();
+app.MapRazorPages();
+app.MapBlazorHub();
+app.MapFallbackToPage("/_Host");
 
 app.Run();

@@ -1,0 +1,56 @@
+@page "/login"
+@using Application.AuthService
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject UserState UserState
+
+<EditForm Model="login" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label>Username</label>
+        <InputText class="form-control" @bind-Value="login.Username" />
+    </div>
+    <div class="mb-3">
+        <label>Password</label>
+        <InputText class="form-control" type="password" @bind-Value="login.Password" />
+    </div>
+    <button class="btn btn-primary w-100" type="submit">Login</button>
+    <div class="text-center mt-3">
+        <a href="/register">Don't have an account? Register</a>
+    </div>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+@code {
+    private LoginUserDto login = new();
+    private string? error;
+
+    private async Task HandleLogin()
+    {
+        error = null;
+        var response = await Http.PostAsJsonAsync("/api/auth/login", login);
+        if (!response.IsSuccessStatusCode)
+        {
+            error = "Invalid credentials.";
+            return;
+        }
+        var result = await response.Content.ReadFromJsonAsync<AuthResult>();
+        if (result is not null)
+        {
+            UserState.SetAuth(result.token, result.user);
+            Nav.NavigateTo("/snippets");
+        }
+    }
+
+    public class AuthResult
+    {
+        public string token { get; set; } = default!;
+        public UserDto user { get; set; } = default!;
+    }
+}

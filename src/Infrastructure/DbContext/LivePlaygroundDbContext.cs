@@ -22,7 +22,7 @@ public class LivePlaygroundDbContext : Microsoft.EntityFrameworkCore.DbContext
         {
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.Email).IsUnique();
-            entity.Property(e => e.UserName).IsRequired().HasMaxLength(64);
+            entity.Property(e => e.Username).IsRequired().HasMaxLength(64);
             entity.Property(e => e.Email).IsRequired().HasMaxLength(128);
         });
 
