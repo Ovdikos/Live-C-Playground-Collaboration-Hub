@@ -11,6 +11,9 @@ public class MappingProfile : Profile
     {
         CreateMap<CodeSnippet, SnippetDto>();
         CreateMap<User, UserDto>();
+        CreateMap<CodeSnippet, SnippetDto>()
+            .ForMember(dest => dest.OwnerName, opt => 
+                opt.MapFrom(src => src.Owner.Username));
     }
     
 }

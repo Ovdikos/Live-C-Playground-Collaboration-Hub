@@ -153,6 +153,13 @@ app.MapGet("/api/snippets", async (IMediator mediator, Guid ownerId) =>
     return Results.Ok(result);
 });
 
+//GET SNIPPET BY ID
+app.MapGet("/api/snippets/{id:guid}", async (IMediator mediator, Guid id) =>
+{
+    var snippet = await mediator.Send(new GetCodeSnippetByIdQuery(id));
+    return snippet is null ? Results.NotFound() : Results.Ok(snippet);
+});
+
 
 // app.MapRazorComponents<App>()
      // .AddInteractiveServerRenderMode();

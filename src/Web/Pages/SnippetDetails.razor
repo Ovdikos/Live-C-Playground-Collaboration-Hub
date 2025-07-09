@@ -1,0 +1,48 @@
+﻿@page "/snippets/{Id:guid}"
+@inject HttpClient Http
+
+@using Application.DTOs
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private SnippetDto? snippet;
+    private string? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            snippet = await Http.GetFromJsonAsync<SnippetDto>($"/api/snippets/{Id}");
+            if (snippet == null)
+                error = "Snippet not found!";
+        }
+        catch
+        {
+            error = "Failed to load snippet.";
+        }
+    }
+}
+
+@if (error != null)
+{
+    <div class="alert alert-danger">@error</div>
+}
+else if (snippet == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div class="card mt-3">
+        <div class="card-body">
+            <h2>@snippet.Title</h2>
+            <p>@snippet.Content</p>
+            <div><b>Owner:</b> @snippet.OwnerName</div>
+            <div><b>Created:</b> @snippet.CreatedAt.ToString("g")</div>
+            <div><b>Last updated:</b> @snippet.UpdatedAt.ToString("g")</div>
+            <div><b>Public:</b> @(snippet.IsPublic ? "Yes" : "No")</div>
+        </div>
+    </div>
+}

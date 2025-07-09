@@ -21,5 +21,11 @@ public class CodeSnippetRepository : ICodeSnippetRepository
             .OrderByDescending(s => s.CreatedAt)
             .ToListAsync();
     }
-    
+
+    public async Task<CodeSnippet?> GetByIdAsync(Guid id)
+    {
+        return await _context.CodeSnippets.
+            Include(s => s.Owner).
+            FirstOrDefaultAsync(s => s.Id == id);
+    }
 }

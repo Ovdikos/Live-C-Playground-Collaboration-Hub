@@ -47,7 +47,10 @@ else
                                 <div class="mt-auto d-flex justify-content-between align-items-end">
                                     <span class="text-muted small">@s.CreatedAt.ToShortDateString()</span>
                                     <div>
-                                        <a class="btn btn-outline-info btn-sm me-2" href="/snippets/@s.Id">
+                                        <a class="btn btn-outline-primary btn-sm me-2" href="/snippets/@s.Id">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                        <a class="btn btn-outline-info btn-sm me-2" href="/snippets/@s.Id/edit">
                                             <i class="bi bi-pencil-square"></i> Edit
                                         </a>
                                         <button class="btn btn-outline-danger btn-sm" @onclick="() => DeleteSnippet(s.Id)">
