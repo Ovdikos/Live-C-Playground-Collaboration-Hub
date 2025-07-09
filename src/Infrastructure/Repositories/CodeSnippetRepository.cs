@@ -34,4 +34,26 @@ public class CodeSnippetRepository : ICodeSnippetRepository
         await _context.CodeSnippets.AddAsync(snippet);
         await _context.SaveChangesAsync();
     }
+
+    public async Task UpdateAsync(CodeSnippet snippet)
+    {
+        _context.CodeSnippets.Update(snippet);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(Guid id)
+    {
+     
+        var snippet = await _context.CodeSnippets.FindAsync(id);
+        if (snippet != null)
+        {
+            _context.CodeSnippets.Remove(snippet);
+            await _context.SaveChangesAsync();
+        }
+        else
+        {
+            throw new KeyNotFoundException("Snippet not found");
+        }
+        
+    }
 }

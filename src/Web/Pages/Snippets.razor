@@ -84,7 +84,11 @@ else
 
     private async Task DeleteSnippet(Guid id)
     {
-        await Http.DeleteAsync($"/api/snippets/{id}");
-        snippets = snippets!.Where(x => x.Id != id).ToList();
+        Http.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", UserState.Token);
+
+        var response = await Http.DeleteAsync($"/api/snippets/{id}");
+        if (response.IsSuccessStatusCode)
+            snippets = snippets!.Where(x => x.Id != id).ToList();
     }
 }

@@ -168,6 +168,22 @@ app.MapPost("/api/snippets", async (IMediator mediator, CreateCodeSnippetCommand
     return Results.Created($"/api/snippets/{id}", id);
 });
 
+// EDIT
+app.MapPut("/api/snippets/{id:guid}", async (IMediator mediator, Guid id, UpdateCodeSnippetCommand cmd) =>
+{
+    if (id != cmd.Id)
+        return Results.BadRequest();
+    await mediator.Send(cmd);
+    return Results.NoContent();
+});
+
+// DELETE
+app.MapDelete("/api/snippets/{id}", async (IMediator mediator, Guid id) =>
+{
+    await mediator.Send(new DeleteCodeSnippetCommand(id));
+    return Results.NoContent();
+});
+
 
 // app.MapRazorComponents<App>()
      // .AddInteractiveServerRenderMode();

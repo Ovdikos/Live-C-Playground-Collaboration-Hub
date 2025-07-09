@@ -11,4 +11,8 @@ public interface ICodeSnippetRepository
     
     Task AddAsync(CodeSnippet snippet);
     
+    Task UpdateAsync(CodeSnippet snippet);
+    
+    Task DeleteAsync(Guid id);
+    
 }

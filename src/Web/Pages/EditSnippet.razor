@@ -1,0 +1,83 @@
+﻿@page "/snippets/{Id:guid}/edit"
+@inject HttpClient Http
+@inject UserState UserState
+@inject NavigationManager Nav
+
+@using Application.AuthService
+@using Application.DTOs
+@using Application.Features.CodeSnippets.Commands
+
+<h3 class="fw-bold mb-4">Edit Snippet</h3>
+
+@if (error != null)
+{
+    <div class="alert alert-danger">@error</div>
+}
+else if (snippet == null)
+{
+    <div>Loading...</div>
+}
+else
+{
+    <EditForm Model="snippet" OnValidSubmit="HandleEdit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="mb-3">
+            <label>Title</label>
+            <InputText class="form-control" @bind-Value="snippet.Title" />
+        </div>
+        <div class="mb-3">
+            <label>Content</label>
+            <InputTextArea class="form-control" @bind-Value="snippet.Content" Rows="7"/>
+        </div>
+        <div class="mb-3 form-check">
+            <InputCheckbox class="form-check-input" @bind-Value="snippet.IsPublic" />
+            <label class="form-check-label">Make public</label>
+        </div>
+        <button type="submit" class="btn btn-success w-100">Save</button>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private UpdateCodeSnippetCommand? snippet;
+    private string? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Http.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", UserState.Token);
+
+        try
+        {
+            var data = await Http.GetFromJsonAsync<SnippetDto>($"/api/snippets/{Id}");
+            if (data == null)
+            {
+                error = "Snippet not found.";
+                return;
+            }
+            snippet = new UpdateCodeSnippetCommand
+            {
+                Id = data.Id,
+                Title = data.Title,
+                Content = data.Content,
+                IsPublic = data.IsPublic
+            };
+        }
+        catch
+        {
+            error = "Error loading snippet.";
+        }
+    }
+
+    private async Task HandleEdit()
+    {
+        if (snippet == null) return;
+        var response = await Http.PutAsJsonAsync($"/api/snippets/{Id}", snippet);
+        if (response.IsSuccessStatusCode)
+            Nav.NavigateTo($"/snippets/{Id}", true);
+        else
+            error = "Failed to update snippet.";
+    }
+}
