@@ -3,6 +3,7 @@ using Application.AuthService;
 using Application.DTOs;
 using Application.Features.Auth.Commands;
 using Application.Features.Auth.Queries;
+using Application.Features.CodeSnippets.Commands;
 using Application.Features.CodeSnippets.Queries;
 using Application.Mapper;
 using Application.Services;
@@ -158,6 +159,13 @@ app.MapGet("/api/snippets/{id:guid}", async (IMediator mediator, Guid id) =>
 {
     var snippet = await mediator.Send(new GetCodeSnippetByIdQuery(id));
     return snippet is null ? Results.NotFound() : Results.Ok(snippet);
+});
+
+// CREATE
+app.MapPost("/api/snippets", async (IMediator mediator, CreateCodeSnippetCommand cmd) =>
+{
+    var id = await mediator.Send(cmd);
+    return Results.Created($"/api/snippets/{id}", id);
 });
 
 

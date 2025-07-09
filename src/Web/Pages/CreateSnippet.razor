@@ -1,0 +1,63 @@
+﻿@page "/snippets/new"
+@using Application.AuthService
+@using Application.Features.CodeSnippets.Commands
+@inject HttpClient Http
+@inject UserState UserState
+@inject NavigationManager Nav
+
+<h3 class="fw-bold mb-4">Create New Snippet</h3>
+
+<EditForm Model="snippet" OnValidSubmit="HandleCreate">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="mb-3">
+        <label>Title</label>
+        <InputText class="form-control" @bind-Value="snippet.Title" />
+    </div>
+    <div class="mb-3">
+        <label>Content</label>
+        <InputTextArea class="form-control" @bind-Value="snippet.Content" Rows="7"/>
+    </div>
+    <div class="mb-3 form-check">
+        <InputCheckbox class="form-check-input" @bind-Value="snippet.IsPublic" />
+        <label class="form-check-label">Make public</label>
+    </div>
+    <button type="submit" class="btn btn-success w-100">Create</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-danger mt-3">@error</div>
+}
+
+@code {
+    private CreateCodeSnippetCommand snippet = new();
+    private string? error;
+
+    private async Task HandleCreate()
+    {
+        error = null;
+        if (!UserState.IsAuthenticated || UserState.User == null)
+        {
+            error = "You must be logged in.";
+            return;
+        }
+
+        snippet.OwnerId = UserState.User.Id;
+
+        Http.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", UserState.Token);
+
+        var response = await Http.PostAsJsonAsync("/api/snippets", snippet);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var id = await response.Content.ReadFromJsonAsync<Guid>();
+            Nav.NavigateTo($"/snippets/{id}", true);
+        }
+        else
+        {
+            error = "Failed to create snippet.";
+        }
+    }
+}

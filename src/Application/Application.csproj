@@ -19,9 +19,4 @@
       <ProjectReference Include="..\Core\Core.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Features\CodeSnippets\Commands\" />
-      <Folder Include="Features\CodeSnippets\Handlers\CommandHandler\" />
-    </ItemGroup>
-
 </Project>

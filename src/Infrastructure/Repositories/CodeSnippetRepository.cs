@@ -28,4 +28,10 @@ public class CodeSnippetRepository : ICodeSnippetRepository
             Include(s => s.Owner).
             FirstOrDefaultAsync(s => s.Id == id);
     }
+
+    public async Task AddAsync(CodeSnippet snippet)
+    {
+        await _context.CodeSnippets.AddAsync(snippet);
+        await _context.SaveChangesAsync();
+    }
 }

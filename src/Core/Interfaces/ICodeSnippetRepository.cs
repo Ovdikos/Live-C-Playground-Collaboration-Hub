@@ -9,6 +9,6 @@ public interface ICodeSnippetRepository
     
     Task<CodeSnippet?> GetByIdAsync(Guid id);
     
-    
+    Task AddAsync(CodeSnippet snippet);
     
 }
