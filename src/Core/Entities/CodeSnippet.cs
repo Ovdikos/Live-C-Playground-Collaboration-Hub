@@ -10,7 +10,7 @@ public class CodeSnippet
     public DateTime UpdatedAt { get; set; }
     public bool IsPublic { get; set; }
     
-    public User Owner { get; set; } = default!;
+    public User? Owner { get; set; }
     
     // For future (maybe)
     public ICollection<CollabSession> CollabSessions { get; set; } = new List<CollabSession>();

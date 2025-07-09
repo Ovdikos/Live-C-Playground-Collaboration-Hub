@@ -1,6 +1,5 @@
 ﻿using Application.DTOs;
 
-namespace Application.AuthService;
 
 public class UserState
 {

@@ -1,10 +1,10 @@
 using System.Text;
-using Application.AuthService;
 using Application.DTOs;
 using Application.Features.Auth.Commands;
 using Application.Features.Auth.Queries;
 using Application.Features.CodeSnippets.Commands;
 using Application.Features.CodeSnippets.Queries;
+using Application.Features.CollabSessions.Query;
 using Application.Mapper;
 using Application.Services;
 using Core.Interfaces;
@@ -35,6 +35,8 @@ builder.Services.AddDbContext<LivePlaygroundDbContext>(options =>
 builder.Services.AddScoped<ICodeSnippetRepository, CodeSnippetRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+builder.Services.AddScoped<ICollabParticipantRepository, CollabParticipantRepository>();
+
 
 // HTTP CLIENT
 builder.Services.AddScoped<HttpClient>(sp =>
@@ -145,7 +147,7 @@ app.MapPost("/api/auth/login", async (
     return Results.Ok(new { token, user });
 });
 
-
+//USER SNIPPET
 
 // GET ALL SNIPPETS
 app.MapGet("/api/snippets", async (IMediator mediator, Guid ownerId) =>
@@ -182,6 +184,23 @@ app.MapDelete("/api/snippets/{id}", async (IMediator mediator, Guid id) =>
 {
     await mediator.Send(new DeleteCodeSnippetCommand(id));
     return Results.NoContent();
+});
+
+
+// USER SESSION
+
+// GET ALL WHERE USER IS
+app.MapGet("/api/sessions/participating", async (IMediator mediator, Guid userId) =>
+{
+    var result = await mediator.Send(new GetSessionsWhereUserIsParticipantQuery(userId));
+    return Results.Ok(result);
+});
+
+// GET OWNED
+app.MapGet("/api/sessions/owned", async (IMediator mediator, Guid userId) =>
+{
+    var result = await mediator.Send(new GetSessionsCreatedByUserQuery(userId));
+    return Results.Ok(result);
 });
 
 

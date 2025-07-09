@@ -1,5 +1,4 @@
 @page "/login"
-@using Application.AuthService
 @inject HttpClient Http
 @inject NavigationManager Nav
 @inject UserState UserState
@@ -44,7 +43,7 @@
         if (result is not null)
         {
             UserState.SetAuth(result.token, result.user);
-            Nav.NavigateTo("/snippets");
+            Nav.NavigateTo("/");
         }
     }
 

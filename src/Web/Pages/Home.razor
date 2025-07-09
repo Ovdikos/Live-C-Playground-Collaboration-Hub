@@ -1,5 +1,19 @@
 @page "/"
+@inject UserState UserState
+@inject NavigationManager Nav
 
-<h1>Welcome to Live C# Playground!</h1>
-<p>This is a collaborative code editing platform built with Blazor and .NET.</p>
-<a class="btn btn-primary" href="/snippets">Go to Code Snippets</a>
+@if (!UserState.IsAuthenticated)
+{
+    @* Редірект на логін, якщо не залогінений *@
+    Nav.NavigateTo("/login", true);
+}
+else
+{
+    <div class="d-flex flex-column align-items-center justify-content-center" style="min-height:60vh;">
+        <h1 class="mb-4">Welcome, @UserState.User?.Username!</h1>
+        <div class="d-flex gap-4">
+            <button class="btn btn-primary btn-lg" @onclick="@(()=>Nav.NavigateTo("/snippets"))">Go to Snippets</button>
+            <button class="btn btn-outline-primary btn-lg" @onclick="@(()=>Nav.NavigateTo("/sessions"))">Go to Sessions</button>
+        </div>
+    </div>
+}

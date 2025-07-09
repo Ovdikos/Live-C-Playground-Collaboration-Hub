@@ -1,19 +1,21 @@
 ﻿<nav class="navbar navbar-expand navbar-dark bg-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="/">Live C# Playground</a>
+        <span class="navbar-brand">Live C# Playground</span>
         <ul class="navbar-nav ms-auto">
             <li class="nav-item">
-                <NavLink class="nav-link" href="/">Home</NavLink>
-            </li>
-            <li class="nav-item">
-                <NavLink class="nav-link" href="/snippets">Snippets</NavLink>
-            </li>
-            <li class="nav-item">
-                <NavLink class="nav-link" href="/login">Login</NavLink>
-            </li>
-            <li class="nav-item">
-                <NavLink class="nav-link" href="/register">Register</NavLink>
+                <button class="btn btn-outline-light" @onclick="Logout">Exit</button>
             </li>
         </ul>
     </div>
 </nav>
+
+@code {
+    [Inject] public UserState UserState { get; set; } = default!;
+    [Inject] public NavigationManager Nav { get; set; } = default!;
+
+    private void Logout()
+    {
+        UserState.Logout();
+        Nav.NavigateTo("/login", forceLoad: true);
+    }
+}

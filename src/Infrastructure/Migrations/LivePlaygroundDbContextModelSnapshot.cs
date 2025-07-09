@@ -65,9 +65,6 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("JoinedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Role")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<Guid>("SessionId")
                         .HasColumnType("uniqueidentifier");
 
@@ -89,18 +86,33 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("CodeSnippetId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("datetime2");
 
-                    b.Property<Guid>("SnippetId")
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<Guid>("OwnerId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SnippetId");
+                    b.HasIndex("CodeSnippetId");
+
+                    b.HasIndex("OwnerId");
 
                     b.ToTable("CollabSessions");
                 });
@@ -124,6 +136,11 @@ namespace Infrastructure.Migrations
 
                     b.Property<bool>("IsAdmin")
                         .HasColumnType("bit");
+
+                    b.Property<bool>("IsBlocked")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -162,7 +179,7 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("Core.Entities.User", "User")
-                        .WithMany("Sessions")
+                        .WithMany("CollabParticipants")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -174,13 +191,21 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.CollabSession", b =>
                 {
-                    b.HasOne("Core.Entities.CodeSnippet", "Snippet")
+                    b.HasOne("Core.Entities.CodeSnippet", "CodeSnippet")
                         .WithMany("CollabSessions")
-                        .HasForeignKey("SnippetId")
+                        .HasForeignKey("CodeSnippetId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Snippet");
+                    b.HasOne("Core.Entities.User", "Owner")
+                        .WithMany("OwnedSessions")
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CodeSnippet");
+
+                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("Core.Entities.CodeSnippet", b =>
@@ -197,7 +222,9 @@ namespace Infrastructure.Migrations
                 {
                     b.Navigation("CodeSnippets");
 
-                    b.Navigation("Sessions");
+                    b.Navigation("CollabParticipants");
+
+                    b.Navigation("OwnedSessions");
                 });
 #pragma warning restore 612, 618
         }

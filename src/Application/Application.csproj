@@ -19,4 +19,9 @@
       <ProjectReference Include="..\Core\Core.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Features\CollabSessions\Command\" />
+      <Folder Include="Features\CollabSessions\Handler\CommandHandler\" />
+    </ItemGroup>
+
 </Project>

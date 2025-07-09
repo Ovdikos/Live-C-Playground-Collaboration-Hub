@@ -24,6 +24,7 @@ public class LivePlaygroundDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.HasIndex(e => e.Email).IsUnique();
             entity.Property(e => e.Username).IsRequired().HasMaxLength(64);
             entity.Property(e => e.Email).IsRequired().HasMaxLength(128);
+            entity.Property(e => e.IsBlocked).HasDefaultValue(false);
         });
 
         // CodeSnippet
@@ -34,16 +35,25 @@ public class LivePlaygroundDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.Property(e => e.Content).IsRequired();
             entity.HasOne(e => e.Owner)
                   .WithMany(u => u.CodeSnippets)
-                  .HasForeignKey(e => e.OwnerId);
+                  .HasForeignKey(e => e.OwnerId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
         // CollabSession
         modelBuilder.Entity<CollabSession>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.HasOne(s => s.Snippet)
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(128);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.HasOne(s => s.Owner)
+                  .WithMany(u => u.OwnedSessions)
+                  .HasForeignKey(s => s.OwnerId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(s => s.CodeSnippet)
                   .WithMany(sn => sn.CollabSessions)
-                  .HasForeignKey(s => s.SnippetId);
+                  .HasForeignKey(s => s.CodeSnippetId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
         // CollabParticipant
@@ -54,10 +64,10 @@ public class LivePlaygroundDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.HasOne(p => p.Session)
                 .WithMany(s => s.Participants)
                 .HasForeignKey(p => p.SessionId)
-                .OnDelete(DeleteBehavior.Cascade); 
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(p => p.User)
-                .WithMany(u => u.Sessions)
+                .WithMany(u => u.CollabParticipants)
                 .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
         });

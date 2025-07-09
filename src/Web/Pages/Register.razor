@@ -1,5 +1,4 @@
 @page "/register"
-@using Application.AuthService
 @inject HttpClient Http
 @inject NavigationManager Nav
 @inject UserState UserState
@@ -51,16 +50,13 @@
 }
 
 @code {
-    // Обов’язково DTO, а не команда з Mediatr
     private Application.DTOs.RegisterUserDto register = new();
     private string? error;
 
     private async Task HandleRegister()
     {
-        // Цей код виконається тільки після сабміту Blazor (OnValidSubmit)
         error = null;
 
-        // Перевіряємо що поля не порожні
         if (string.IsNullOrWhiteSpace(register.Username) ||
             string.IsNullOrWhiteSpace(register.Password) ||
             string.IsNullOrWhiteSpace(register.Email))
@@ -69,7 +65,6 @@
             return;
         }
 
-        // Відправляємо JSON на сервер
         var response = await Http.PostAsJsonAsync("/api/auth/register", register);
 
         if (!response.IsSuccessStatusCode)
@@ -82,7 +77,7 @@
         if (result is not null)
         {
             UserState.SetAuth(result.token, result.user);
-            Nav.NavigateTo("/snippets");
+            Nav.NavigateTo("/");
         }
     }
 

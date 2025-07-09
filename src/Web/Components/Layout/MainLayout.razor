@@ -1,7 +1,14 @@
 ﻿@inherits LayoutComponentBase
 
-<NavMenu />
+@if (UserState.IsAuthenticated)
+{
+    <NavMenu />
+}
 
 <main class="container py-4">
     @Body
 </main>
+
+@code {
+    [Inject] public UserState UserState { get; set; } = default!;
+}

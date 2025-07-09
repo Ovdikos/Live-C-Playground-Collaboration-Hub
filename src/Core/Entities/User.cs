@@ -10,12 +10,14 @@ public class User
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public string? AvatarUrl { get; set; }
     public bool IsAdmin { get; set; }
+    public bool IsBlocked { get; set; } = false; // for admin
     
     
     public ICollection<CodeSnippet> CodeSnippets { get; set; } = new List<CodeSnippet>();
     
+    public ICollection<CollabSession> OwnedSessions { get; set; } = new List<CollabSession>();
     // For future (maybe)
-    public ICollection<CollabParticipant> Sessions { get; set; } = new List<CollabParticipant>();
+    public ICollection<CollabParticipant> CollabParticipants { get; set; } = new List<CollabParticipant>();
     
     
 }

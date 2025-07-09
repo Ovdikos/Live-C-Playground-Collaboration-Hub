@@ -1,0 +1,74 @@
+﻿@page "/sessions"
+@inject HttpClient Http
+@inject UserState UserState
+@using Application.DTOs
+
+<div class="container mt-5">
+    <h3 class="fw-bold mb-3">Sessions I'm Participating In</h3>
+    @if (sessionsParticipating is null)
+    {
+        <div>Loading...</div>
+    }
+    else if (!sessionsParticipating.Any())
+    {
+        <div class="alert alert-info">You are not participating in any sessions.</div>
+    }
+    else
+    {
+        <ul class="list-group mb-5">
+            @foreach (var s in sessionsParticipating)
+            {
+                <li class="list-group-item d-flex flex-column align-items-start mb-2 rounded shadow-sm">
+                    <div class="fw-semibold">@s.Name</div>
+                    <div class="text-muted small">Snippet: @s.CodeSnippetTitle</div>
+                    <div class="text-muted small">Participants: @s.Participants.Count</div>
+                    <a class="btn btn-outline-primary btn-sm mt-2" href="/sessions/@s.Id">
+                        <i class="bi bi-eye"></i> Details
+                    </a>
+                </li>
+            }
+        </ul>
+    }
+
+    <h3 class="fw-bold mb-3">Sessions I Own</h3>
+    @if (sessionsOwned is null)
+    {
+        <div>Loading...</div>
+    }
+    else if (!sessionsOwned.Any())
+    {
+        <div class="alert alert-info">You haven't created any sessions yet.</div>
+    }
+    else
+    {
+        <ul class="list-group">
+            @foreach (var s in sessionsOwned)
+            {
+                <li class="list-group-item d-flex flex-column align-items-start mb-2 rounded shadow-sm">
+                    <div class="fw-semibold">@s.Name</div>
+                    <div class="text-muted small">Snippet: @s.CodeSnippetTitle</div>
+                    <div class="text-muted small">Participants: @s.Participants.Count</div>
+                    <a class="btn btn-outline-primary btn-sm mt-2" href="/sessions/@s.Id">
+                        <i class="bi bi-eye"></i> Details
+                    </a>
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+@code {
+    private List<CollabSessionDto>? sessionsParticipating;
+    private List<CollabSessionDto>? sessionsOwned;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!UserState.IsAuthenticated || UserState.User is null)
+            return;
+
+        var userId = UserState.User.Id.ToString();
+
+        sessionsParticipating = await Http.GetFromJsonAsync<List<CollabSessionDto>>($"/api/sessions/participating?userId={userId}");
+        sessionsOwned = await Http.GetFromJsonAsync<List<CollabSessionDto>>($"/api/sessions/owned?userId={userId}");
+    }
+}
