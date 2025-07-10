@@ -17,7 +17,7 @@ public class MappingProfile : Profile
         CreateMap<CollabSession, CollabSessionDto>()
             .ForMember(dest => dest.CodeSnippetTitle, opt => opt.MapFrom(src => src.CodeSnippet.Title));
         CreateMap<CollabParticipant, CollabParticipantDto>()
-            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Username));
+            .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.User.Username));
 
     }
     

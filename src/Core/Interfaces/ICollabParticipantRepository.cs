@@ -6,4 +6,7 @@ public interface ICollabParticipantRepository
 {
     Task<List<CollabSession>> GetSessionsWhereUserIsParticipantAsync(Guid userId);
     Task<List<CollabSession>> GetSessionsCreatedByUserAsync(Guid userId);
+    
+    Task<CollabSession?> GetSessionWithParticipantsAsync(Guid sessionId);
+    
 }

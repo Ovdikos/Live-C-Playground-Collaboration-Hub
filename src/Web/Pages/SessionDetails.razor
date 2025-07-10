@@ -1,0 +1,48 @@
+﻿@page "/sessions/{Id:guid}"
+@inject HttpClient Http
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    private CollabSessionDto? session;
+    private string? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            session = await Http.GetFromJsonAsync<CollabSessionDto>($"/api/sessions/{Id}");
+        }
+        catch
+        {
+            error = "Failed to load session.";
+        }
+    }
+}
+
+@if (error != null)
+{
+    <div class="alert alert-danger">@error</div>
+}
+else if (session == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div class="card mt-4">
+        <div class="card-body">
+            <h2>@session.Name</h2>
+            <div><b>Owner:</b> @session.OwnerName</div>
+            <div><b>Created:</b> @session.CreatedAt.ToString("g")</div>
+            <div><b>Active:</b> @(session.IsActive ? "Yes" : "No")</div>
+            <div><b>Snippet:</b> @session.CodeSnippetTitle</div>
+            <h5 class="mt-4">Participants</h5>
+            <ul>
+                @foreach (var p in session.Participants)
+                {
+                    <li>@p.Username (@p.Email) - joined @p.JoinedAt.ToString("g")</li>
+                }
+            </ul>
+        </div>
+    </div>
+}

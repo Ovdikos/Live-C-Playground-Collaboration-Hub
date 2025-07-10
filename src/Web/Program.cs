@@ -203,6 +203,14 @@ app.MapGet("/api/sessions/owned", async (IMediator mediator, Guid userId) =>
     return Results.Ok(result);
 });
 
+// GET INFO 
+
+app.MapGet("/api/sessions/{id}", async (IMediator _mediator, Guid id) =>
+{
+    var session = await _mediator.Send(new GetSessionDetailsQuery(id));
+    return Results.Ok(session);
+});
+
 
 // app.MapRazorComponents<App>()
      // .AddInteractiveServerRenderMode();
