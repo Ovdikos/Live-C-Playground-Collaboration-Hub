@@ -9,4 +9,6 @@ public interface ICollabParticipantRepository
     
     Task<CollabSession?> GetSessionWithParticipantsAsync(Guid sessionId);
     
+    Task<CollabSession> CreateSessionAsync(CollabSession session);
+    
 }

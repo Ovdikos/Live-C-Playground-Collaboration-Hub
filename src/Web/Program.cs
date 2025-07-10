@@ -4,6 +4,7 @@ using Application.Features.Auth.Commands;
 using Application.Features.Auth.Queries;
 using Application.Features.CodeSnippets.Commands;
 using Application.Features.CodeSnippets.Queries;
+using Application.Features.CollabSessions.Command;
 using Application.Features.CollabSessions.Query;
 using Application.Mapper;
 using Application.Services;
@@ -209,6 +210,16 @@ app.MapGet("/api/sessions/{id}", async (IMediator _mediator, Guid id) =>
 {
     var session = await _mediator.Send(new GetSessionDetailsQuery(id));
     return Results.Ok(session);
+});
+
+
+// CREATE
+
+app.MapPost("/api/sessions", async (
+    CreateSessionCommand command, IMediator mediator) =>
+{
+    var sessionDto = await mediator.Send(command);
+    return Results.Ok(sessionDto);
 });
 
 

@@ -1,0 +1,72 @@
+﻿@page "/sessions/create"
+@inject HttpClient Http
+@inject UserState UserState
+@inject NavigationManager Nav
+
+<h3 class="fw-bold mb-4">Create New Session</h3>
+
+<EditForm Model="session" OnValidSubmit="HandleCreate">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="mb-3">
+        <label>Session Name</label>
+        <InputText class="form-control" @bind-Value="session.Name" />
+    </div>
+    <div class="mb-3">
+        <label>For Snippet</label>
+        <InputSelect class="form-control" @bind-Value="session.CodeSnippetId">
+            <option value="">-- Select snippet --</option>
+            @foreach (var s in snippets)
+            {
+                <option value="@s.Id">@s.Title</option>
+            }
+        </InputSelect>
+    </div>
+    <button type="submit" class="btn btn-success w-100">Create</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-danger mt-3">@error</div>
+}
+
+@code {
+    private CreateSessionCommand session = new();
+    private List<SnippetDto> snippets = new();
+    private string? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!UserState.IsAuthenticated || UserState.User is null)
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
+        snippets = await Http.GetFromJsonAsync<List<SnippetDto>>($"/api/snippets?ownerId={UserState.User.Id}");
+        session.OwnerId = UserState.User.Id;
+    }
+
+    private async Task HandleCreate()
+    {
+        error = null;
+        var response = await Http.PostAsJsonAsync("/api/sessions", session);
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<CollabSessionDto>();
+            Nav.NavigateTo($"/sessions/{result!.Id}");
+        }
+        else
+        {
+            error = "Failed to create session.";
+        }
+    }
+
+    public class CreateSessionCommand
+    {
+        [Required]
+        public string Name { get; set; } = "";
+        [Required]
+        public Guid CodeSnippetId { get; set; }
+        public Guid OwnerId { get; set; }
+    }
+}
