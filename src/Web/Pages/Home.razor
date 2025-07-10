@@ -4,7 +4,6 @@
 
 @if (!UserState.IsAuthenticated)
 {
-    @* Редірект на логін, якщо не залогінений *@
     Nav.NavigateTo("/login", true);
 }
 else

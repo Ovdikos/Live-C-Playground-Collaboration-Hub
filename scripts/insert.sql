@@ -1,9 +1,25 @@
-INSERT INTO Users (Id, UserName, Email, PasswordHash, CreatedAt, AvatarUrl)
+-- Users
+INSERT INTO Users (Id, Username, Email, PasswordHash, CreatedAt, AvatarUrl, IsAdmin, IsBlocked)
 VALUES
-    ('b1aefd99-9c29-4a25-bd2d-93d167a20b00', 'alice', 'alice@mail.com', 'hashedpass1', GETUTCDATE(), NULL),
-    ('c2ed3f7a-57e7-4d1c-92b4-fc4bb1006e11', 'bob', 'bob@mail.com', 'hashedpass2', GETUTCDATE(), NULL);
+    (NEWID(), 'admin', 'admin@example.com', 'hashedpassword', GETUTCDATE(), NULL, 1, 0),
+    (NEWID(), 'testuser', 'test@example.com', 'hashedpassword', GETUTCDATE(), NULL, 0, 0);
 
+-- CodeSnippets
 INSERT INTO CodeSnippets (Id, Title, Content, OwnerId, CreatedAt, UpdatedAt, IsPublic)
 VALUES
-    ('55f2f16e-8a52-49e2-9d4e-44457b3f2c11', 'Hello World', 'Console.WriteLine("Hello World!");', 'b1aefd99-9c29-4a25-bd2d-93d167a20b00', GETUTCDATE(), GETUTCDATE(), 1),
-    ('d1ea1ed0-3e7d-4b7f-a8c1-45b42b39a3e7', 'Fibonacci', 'int F(int n) => n <= 1 ? 1 : F(n-1) + F(n-2);', 'c2ed3f7a-57e7-4d1c-92b4-fc4bb1006e11', GETUTCDATE(), GETUTCDATE(), 0);
+    (NEWID(), 'Sample Snippet', 'Console.WriteLine("Hello, World!");', (SELECT TOP 1 Id FROM Users WHERE Username = 'admin'), GETUTCDATE(), NULL, 1);
+
+-- CollabSessions
+INSERT INTO CollabSessions (Id, Name, OwnerId, CodeSnippetId, CreatedAt, ExpiresAt, EditedAt, IsActive)
+VALUES
+    (NEWID(), 'Session 1', (SELECT TOP 1 Id FROM Users WHERE Username = 'admin'), (SELECT TOP 1 Id FROM CodeSnippets), GETUTCDATE(), NULL, NULL, 1);
+
+-- CollabParticipants
+INSERT INTO CollabParticipants (Id, SessionId, UserId, JoinedAt)
+VALUES
+    (NEWID(), (SELECT TOP 1 Id FROM CollabSessions), (SELECT TOP 1 Id FROM Users WHERE Username = 'testuser'), GETUTCDATE());
+
+-- SessionEditHistories
+INSERT INTO SessionEditHistories (Id, SessionId, EditedByUserId, EditedAt, Changes)
+VALUES
+    (NEWID(), (SELECT TOP 1 Id FROM CollabSessions), (SELECT TOP 1 Id FROM Users WHERE Username = 'admin'), GETUTCDATE(), 'Session created');

@@ -8,6 +8,7 @@ using Application.Features.CollabSessions.Command;
 using Application.Features.CollabSessions.Query;
 using Application.Mapper;
 using Application.Services;
+using AutoMapper;
 using Core.Interfaces;
 using FluentValidation;
 using Infrastructure.DbContext;
@@ -193,15 +194,29 @@ app.MapDelete("/api/snippets/{id}", async (IMediator mediator, Guid id) =>
 // GET ALL WHERE USER IS
 app.MapGet("/api/sessions/participating", async (IMediator mediator, Guid userId) =>
 {
+    try
+    {
     var result = await mediator.Send(new GetSessionsWhereUserIsParticipantQuery(userId));
     return Results.Ok(result);
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(ex.Message);
+    }
 });
 
 // GET OWNED
 app.MapGet("/api/sessions/owned", async (IMediator mediator, Guid userId) =>
 {
+    try
+    {
     var result = await mediator.Send(new GetSessionsCreatedByUserQuery(userId));
     return Results.Ok(result);
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(ex.Message);
+    }
 });
 
 // GET INFO 
@@ -220,6 +235,29 @@ app.MapPost("/api/sessions", async (
 {
     var sessionDto = await mediator.Send(command);
     return Results.Ok(sessionDto);
+});
+
+// EDIT
+
+app.MapPut("/api/sessions/{id}", async (
+    Guid id, EditSessionCommand command, IMediator mediator) =>
+{
+    if (id != command.SessionId) return Results.BadRequest();
+    var updated = await mediator.Send(command);
+    return Results.Ok(updated);
+});
+
+// GET HISTORY CHANGES
+app.MapGet("/api/sessions/{id}/history", async (
+    Guid id, LivePlaygroundDbContext db, IMapper mapper) =>
+{
+    var history = await db.SessionEditHistories
+        .Where(h => h.SessionId == id)
+        .Include(h => h.EditedByUser)
+        .OrderByDescending(h => h.EditedAt)
+        .ToListAsync();
+
+    return mapper.Map<List<SessionEditHistoryDto>>(history);
 });
 
 

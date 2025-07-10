@@ -1,0 +1,79 @@
+﻿@page "/sessions/{Id:guid}/edit"
+@using Application.Features.CollabSessions.Command
+@inject HttpClient Http
+@inject UserState UserState
+@inject NavigationManager Nav
+
+<h3 class="fw-bold mb-4">Edit Session</h3>
+
+@if (session == null)
+{
+    <div>Loading...</div>
+}
+else
+{
+    <EditForm Model="session" OnValidSubmit="HandleEdit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="mb-3">
+            <label>Session Name</label>
+            <InputText class="form-control" @bind-Value="session.Name" />
+        </div>
+        <button type="submit" class="btn btn-success w-100">Save</button>
+    </EditForm>
+}
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-danger mt-3">@error</div>
+}
+
+<h5 class="mt-5">Edit History</h5>
+@if (history != null && history.Any())
+{
+    <ul class="list-group">
+        @foreach (var h in history)
+        {
+            <li class="list-group-item">
+                <strong>@h.EditedByUsername</strong>
+                <span class="ms-2 text-muted">@h.EditedAt.ToLocalTime().ToString("g")</span>
+                <div class="small">@h.Changes</div>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    private EditSessionCommand session = new();
+    private List<SessionEditHistoryDto> history = new();
+    private string? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var dto = await Http.GetFromJsonAsync<CollabSessionDto>($"/api/sessions/{Id}");
+        if (dto == null)
+        {
+            error = "Session not found";
+            return;
+        }
+        session.SessionId = dto.Id;
+        session.Name = dto.Name;
+        session.EditedByUserId = UserState.User!.Id;
+
+        history = await Http.GetFromJsonAsync<List<SessionEditHistoryDto>>($"/api/sessions/{Id}/history");
+    }
+
+    private async Task HandleEdit()
+    {
+        error = null;
+        // TODO: generate list of changes
+        session.Changes = "Session name edited"; 
+        var resp = await Http.PutAsJsonAsync($"/api/sessions/{Id}", session);
+        if (resp.IsSuccessStatusCode)
+        {
+            Nav.NavigateTo($"/sessions/{Id}", true);
+        }
+        else error = "Failed to update session";
+    }
+}

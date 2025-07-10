@@ -9,7 +9,7 @@ namespace Application.Features.CollabSessions.Handler.QueryHandler;
 public class GetSessionDetailsHandler : IRequestHandler<GetSessionDetailsQuery, CollabSessionDto>
 {
     private readonly ICollabParticipantRepository _repo;
-    private readonly IMapper _mapper; // Якщо використовуєш AutoMapper
+    private readonly IMapper _mapper; 
 
     public GetSessionDetailsHandler(ICollabParticipantRepository repo, IMapper mapper)
     {

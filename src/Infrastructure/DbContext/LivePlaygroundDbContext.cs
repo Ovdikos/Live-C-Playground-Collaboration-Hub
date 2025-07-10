@@ -12,6 +12,8 @@ public class LivePlaygroundDbContext : Microsoft.EntityFrameworkCore.DbContext
     public DbSet<CodeSnippet> CodeSnippets => Set<CodeSnippet>();
     public DbSet<CollabSession> CollabSessions => Set<CollabSession>();
     public DbSet<CollabParticipant> CollabParticipants => Set<CollabParticipant>();
+    
+    public DbSet<SessionEditHistory> SessionEditHistories => Set<SessionEditHistory>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -69,6 +71,20 @@ public class LivePlaygroundDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.HasOne(p => p.User)
                 .WithMany(u => u.CollabParticipants)
                 .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+        
+        // SessionEditHistory
+        modelBuilder.Entity<SessionEditHistory>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.Session)
+                .WithMany(s => s.EditHistories)
+                .HasForeignKey(e => e.SessionId).OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasOne(e => e.EditedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.EditedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }

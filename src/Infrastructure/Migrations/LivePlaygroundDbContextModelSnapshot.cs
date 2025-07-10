@@ -92,6 +92,9 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("EditedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("ExpiresAt")
                         .HasColumnType("datetime2");
 
@@ -115,6 +118,34 @@ namespace Infrastructure.Migrations
                     b.HasIndex("OwnerId");
 
                     b.ToTable("CollabSessions");
+                });
+
+            modelBuilder.Entity("Core.Entities.SessionEditHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Changes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("EditedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("EditedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EditedByUserId");
+
+                    b.HasIndex("SessionId");
+
+                    b.ToTable("SessionEditHistories");
                 });
 
             modelBuilder.Entity("Core.Entities.User", b =>
@@ -208,6 +239,25 @@ namespace Infrastructure.Migrations
                     b.Navigation("Owner");
                 });
 
+            modelBuilder.Entity("Core.Entities.SessionEditHistory", b =>
+                {
+                    b.HasOne("Core.Entities.User", "EditedByUser")
+                        .WithMany()
+                        .HasForeignKey("EditedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Core.Entities.CollabSession", "Session")
+                        .WithMany("EditHistories")
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("EditedByUser");
+
+                    b.Navigation("Session");
+                });
+
             modelBuilder.Entity("Core.Entities.CodeSnippet", b =>
                 {
                     b.Navigation("CollabSessions");
@@ -215,6 +265,8 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.CollabSession", b =>
                 {
+                    b.Navigation("EditHistories");
+
                     b.Navigation("Participants");
                 });
 

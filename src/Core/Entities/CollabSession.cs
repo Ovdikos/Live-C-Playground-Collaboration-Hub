@@ -8,6 +8,7 @@ public class CollabSession
     public Guid CodeSnippetId { get; set; }          
     public DateTime CreatedAt { get; set; }
     public DateTime? ExpiresAt { get; set; }         
+    public DateTime? EditedAt { get; set; }         
     public bool IsActive { get; set; } = true;
 
     
@@ -15,4 +16,5 @@ public class CollabSession
     public CodeSnippet? CodeSnippet { get; set; }
     public ICollection<CollabParticipant> Participants { get; set; } = new List<CollabParticipant>();
     
+    public ICollection<SessionEditHistory> EditHistories { get; set; } = new List<SessionEditHistory>();
 }
