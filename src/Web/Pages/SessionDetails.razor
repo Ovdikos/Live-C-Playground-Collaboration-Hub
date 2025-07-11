@@ -36,6 +36,13 @@ else
             <div><b>Created:</b> @session.CreatedAt.ToString("g")</div>
             <div><b>Active:</b> @(session.IsActive ? "Yes" : "No")</div>
             <div><b>Snippet:</b> @session.CodeSnippetTitle</div>
+            @if (!string.IsNullOrWhiteSpace(session.SnippetContent))
+            {
+                <pre class="bg-light rounded p-2 mt-2" style="max-width:100%; overflow-x:auto;">
+                    @session.SnippetContent
+                </pre>
+            }
+
             <h5 class="mt-4">Participants</h5>
             <ul>
                 @foreach (var p in session.Participants)
@@ -43,6 +50,21 @@ else
                     <li>@p.Username (@p.Email) - joined @p.JoinedAt.ToString("g")</li>
                 }
             </ul>
+
+            @if (session.EditHistories != null && session.EditHistories.Any())
+            {
+                <h5 class="mt-4">Change History</h5>
+                <ul>
+                    @foreach (var h in session.EditHistories)
+                    {
+                        <li>
+                            <strong>@h.EditedByUsername</strong>
+                            <span class="ms-2 text-muted">@h.EditedAt.ToLocalTime().ToString("g")</span>
+                            <div class="small">@h.Changes</div>
+                        </li>
+                    }
+                </ul>
+            }
         </div>
     </div>
 }

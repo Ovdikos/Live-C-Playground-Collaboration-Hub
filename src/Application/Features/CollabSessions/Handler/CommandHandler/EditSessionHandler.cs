@@ -2,41 +2,90 @@
 using Application.Features.CollabSessions.Command;
 using AutoMapper;
 using Core.Entities;
-using Core.Interfaces;
+using Infrastructure.DbContext;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Features.CollabSessions.Handler.CommandHandler;
 
 public class EditSessionHandler : IRequestHandler<EditSessionCommand, CollabSessionDto>
 {
-    private readonly ICollabParticipantRepository _repo;
+    private readonly LivePlaygroundDbContext _context;
     private readonly IMapper _mapper;
 
-    public EditSessionHandler(ICollabParticipantRepository repo, IMapper mapper)
+    public EditSessionHandler(LivePlaygroundDbContext db, IMapper mapper)
     {
-        _repo = repo;
+        _context = db;
         _mapper = mapper;
     }
 
     public async Task<CollabSessionDto> Handle(EditSessionCommand request, CancellationToken cancellationToken)
     {
-        var session = await _repo.GetByIdAsync(request.SessionId);
+        var session = await _context.CollabSessions
+            .Include(x => x.CodeSnippet)
+            .Include(x => x.Owner)
+            .Include(x => x.EditHistories)
+            .FirstOrDefaultAsync(x => x.Id == request.SessionId, cancellationToken);
+
         if (session == null)
-            throw new Exception("Session not found");
+            throw new Exception($"Session not found! Id: {request.SessionId}");
 
-        session.Name = request.Name;
-        session.EditedAt = DateTime.UtcNow;
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == request.EditedByUserId, cancellationToken);
 
-        var history = new SessionEditHistory
+        if (user == null)
+            throw new Exception($"Editing user not found! UserId: {request.EditedByUserId}");
+
+        string changesDesc = "";
+        bool isChanged = false;
+
+        if (!string.IsNullOrWhiteSpace(request.Changes))
+            changesDesc += request.Changes.Trim() + " ";
+
+        if (!string.IsNullOrWhiteSpace(request.Name) && session.Name != request.Name)
         {
-            Id = Guid.NewGuid(),
-            SessionId = session.Id,
-            EditedByUserId = request.EditedByUserId,
-            EditedAt = session.EditedAt.Value,
-            Changes = request.Changes
-        };
+            session.Name = request.Name;
+            isChanged = true;
+        }
 
-        var updated = await _repo.UpdateSessionAsync(session, history);
-        return _mapper.Map<CollabSessionDto>(updated);
+        // Логіка зміни коду
+        if (!string.IsNullOrWhiteSpace(request.Content))
+        {
+            if (session.CodeSnippet == null)
+                throw new Exception($"Session's CodeSnippet is null! SessionId: {session.Id}");
+
+            if (session.CodeSnippet.Content != request.Content)
+            {
+                session.CodeSnippet.Content = request.Content;
+                isChanged = true;
+            }
+        }
+
+        if (isChanged || !string.IsNullOrWhiteSpace(request.Changes))
+        {
+            session.EditedAt = DateTime.UtcNow;
+
+            var editHistory = new SessionEditHistory
+            {
+                Id = Guid.NewGuid(),
+                SessionId = session.Id,
+                EditedByUserId = user.Id,
+                EditedAt = DateTime.UtcNow,
+                Changes = changesDesc.Trim()
+            };
+            _context.Set<SessionEditHistory>().Add(editHistory);
+        }
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        var fullSession = await _context.CollabSessions
+            .Include(x => x.CodeSnippet)
+            .Include(x => x.Owner)
+            .Include(x => x.EditHistories)
+                .ThenInclude(h => h.EditedByUser)
+            .FirstOrDefaultAsync(x => x.Id == session.Id, cancellationToken);
+
+        return _mapper.Map<CollabSessionDto>(fullSession!);
     }
 }
+

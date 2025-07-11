@@ -19,6 +19,14 @@ else
             <label>Session Name</label>
             <InputText class="form-control" @bind-Value="session.Name" />
         </div>
+        <div class="mb-3">
+            <label>Code Content</label>
+            <InputTextArea class="form-control" @bind-Value="session.Content" Rows="12" />
+        </div>
+        <div class="mb-3">
+            <label>Change Comment (commit message)</label>
+            <InputText class="form-control" @bind-Value="session.Changes" />
+        </div>
         <button type="submit" class="btn btn-success w-100">Save</button>
     </EditForm>
 }
@@ -59,7 +67,9 @@ else
         }
         session.SessionId = dto.Id;
         session.Name = dto.Name;
+        session.Content = dto.Content ?? "";
         session.EditedByUserId = UserState.User!.Id;
+        session.Changes = "";
 
         history = await Http.GetFromJsonAsync<List<SessionEditHistoryDto>>($"/api/sessions/{Id}/history");
     }
@@ -67,8 +77,6 @@ else
     private async Task HandleEdit()
     {
         error = null;
-        // TODO: generate list of changes
-        session.Changes = "Session name edited"; 
         var resp = await Http.PutAsJsonAsync($"/api/sessions/{Id}", session);
         if (resp.IsSuccessStatusCode)
         {

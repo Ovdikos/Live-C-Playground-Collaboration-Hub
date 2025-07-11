@@ -14,14 +14,16 @@ public class MappingProfile : Profile
         CreateMap<CodeSnippet, SnippetDto>()
             .ForMember(dest => dest.OwnerName, opt => 
                 opt.MapFrom(src => src.Owner.Username));
-        CreateMap<CollabSession, CollabSessionDto>()
-            .ForMember(dest => dest.CodeSnippetTitle, opt => opt.MapFrom(src => src.CodeSnippet.Title));
         CreateMap<CollabParticipant, CollabParticipantDto>()
             .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.User.Username));
-        CreateMap<CollabSession, CollabSessionDto>()
-            .ForMember(dest => dest.CodeSnippetTitle, opt => opt.MapFrom(src => src.CodeSnippet.Title));
         CreateMap<SessionEditHistory, SessionEditHistoryDto>()
             .ForMember(dest => dest.EditedByUsername, opt => opt.MapFrom(src => src.EditedByUser.Username));
+        CreateMap<CollabSession, CollabSessionDto>()
+            .ForMember(dest => dest.CodeSnippetTitle, opt => opt.MapFrom(src => src.CodeSnippet.Title))
+            .ForMember(dest => dest.OwnerName, opt => opt.MapFrom(src => src.Owner.Username))
+            .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.CodeSnippet.Content))
+            .ForMember(dest => dest.SnippetContent, opt => opt.MapFrom(src => src.CodeSnippet.Content))
+            .ForMember(dest => dest.EditHistories, opt => opt.MapFrom(src => src.EditHistories.OrderByDescending(h => h.EditedAt)));
 
     }
     

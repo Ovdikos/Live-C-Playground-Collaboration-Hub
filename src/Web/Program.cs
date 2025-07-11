@@ -221,11 +221,21 @@ app.MapGet("/api/sessions/owned", async (IMediator mediator, Guid userId) =>
 
 // GET INFO 
 
-app.MapGet("/api/sessions/{id}", async (IMediator _mediator, Guid id) =>
+app.MapGet("/api/sessions/{id}", async (Guid id, LivePlaygroundDbContext db, IMapper mapper) =>
 {
-    var session = await _mediator.Send(new GetSessionDetailsQuery(id));
-    return Results.Ok(session);
+    var session = await db.CollabSessions
+        .Include(x => x.CodeSnippet)
+        .Include(x => x.Owner)
+        .Include(x => x.EditHistories)
+        .ThenInclude(h => h.EditedByUser)
+        .FirstOrDefaultAsync(x => x.Id == id);
+
+    if (session == null)
+        return Results.NotFound();
+
+    return Results.Ok(mapper.Map<CollabSessionDto>(session));
 });
+
 
 
 // CREATE
@@ -239,8 +249,7 @@ app.MapPost("/api/sessions", async (
 
 // EDIT
 
-app.MapPut("/api/sessions/{id}", async (
-    Guid id, EditSessionCommand command, IMediator mediator) =>
+app.MapPut("/api/sessions/{id}", async (Guid id, EditSessionCommand command, IMediator mediator) =>
 {
     if (id != command.SessionId) return Results.BadRequest();
     var updated = await mediator.Send(command);
