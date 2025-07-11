@@ -22,6 +22,13 @@
             }
         </InputSelect>
     </div>
+    <div class="mb-3">
+        <label>Join Code</label>
+        <InputText class="form-control" @bind-Value="session.JoinCode" />
+        <small class="form-text text-muted">
+            This code will be required to join the session. Example: <b>abcd1234</b>
+        </small>
+    </div>
     <button type="submit" class="btn btn-success w-100">Create</button>
 </EditForm>
 
@@ -68,5 +75,7 @@
         [Required]
         public Guid CodeSnippetId { get; set; }
         public Guid OwnerId { get; set; }
+        [Required]
+        public string JoinCode { get; set; } = ""; 
     }
 }

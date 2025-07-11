@@ -27,7 +27,8 @@ public class CreateCollabSessionCommandHandler : IRequestHandler<CreateSessionCo
             OwnerId = request.OwnerId,
             CodeSnippetId = request.CodeSnippetId,
             CreatedAt = DateTime.UtcNow,
-            IsActive = true
+            IsActive = true,
+            JoinCode = request.JoinCode
         };
 
         var result = await _repo.CreateSessionAsync(session);
