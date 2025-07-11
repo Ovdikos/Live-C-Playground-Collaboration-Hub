@@ -23,7 +23,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.OwnerName, opt => opt.MapFrom(src => src.Owner.Username))
             .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.CodeSnippet.Content))
             .ForMember(dest => dest.SnippetContent, opt => opt.MapFrom(src => src.CodeSnippet.Content))
-            .ForMember(dest => dest.EditHistories, opt => opt.MapFrom(src => src.EditHistories.OrderByDescending(h => h.EditedAt)));
+            .ForMember(dest => dest.EditHistories, opt => opt.MapFrom(src => src.EditHistories.OrderByDescending(h => h.EditedAt)))
+            .ForMember(dest => dest.Participants, opt => opt.MapFrom(src => src.Participants));
 
     }
     

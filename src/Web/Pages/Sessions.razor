@@ -1,16 +1,21 @@
 ﻿@page "/sessions"
 @inject HttpClient Http
 @inject UserState UserState
+@inject NavigationManager NavigationManager
 @using Application.DTOs
 
 <div class="container mt-5">
-    <a class="btn btn-primary" href="/sessions/create">Create New Session</a>
+    <div class="d-flex gap-2 mb-3">
+        <a class="btn btn-primary" href="/sessions/create">Create New Session</a>
+        <button class="btn btn-success" @onclick="ShowJoinModal">Join Session</button>
+    </div>
+
     <h3 class="fw-bold mb-3">Sessions I'm Participating In</h3>
-    @if (sessionsParticipating is null)
+    @if (sessionsParticipating == null)
     {
         <div>Loading...</div>
     }
-    else if (!sessionsParticipating.Any())
+    else if (sessionsParticipating.Count == 0)
     {
         <div class="alert alert-info">You are not participating in any sessions.</div>
     }
@@ -20,9 +25,23 @@
             @foreach (var s in sessionsParticipating)
             {
                 <li class="list-group-item d-flex flex-column align-items-start mb-2 rounded shadow-sm">
-                    <div class="fw-semibold">@s.Name</div>
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <span class="fw-semibold">@s.Name</span>
+                        @if (s.OwnerName == UserState.User?.Username)
+                        {
+                            <button class="btn btn-outline-danger btn-sm" @onclick="() => ShowDeleteModal(s.Id)">
+                                Delete
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-outline-danger btn-sm" @onclick="() => ShowLeaveModal(s.Id)">
+                                Leave
+                            </button>
+                        }
+                    </div>
                     <div class="text-muted small">Snippet: @s.CodeSnippetTitle</div>
-                    <div class="text-muted small">Participants: @s.Participants.Count</div>
+                    <div class="text-muted small">Participants: @(s.Participants != null ? s.Participants.Count : 0)</div>
                     <a class="btn btn-outline-primary btn-sm mt-2" href="/sessions/@s.Id">
                         <i class="bi bi-eye"></i> Details
                     </a>
@@ -35,11 +54,11 @@
     }
 
     <h3 class="fw-bold mb-3">Sessions I Own</h3>
-    @if (sessionsOwned is null)
+    @if (sessionsOwned == null)
     {
         <div>Loading...</div>
     }
-    else if (!sessionsOwned.Any())
+    else if (sessionsOwned.Count == 0)
     {
         <div class="alert alert-info">You haven't created any sessions yet.</div>
     }
@@ -49,9 +68,14 @@
             @foreach (var s in sessionsOwned)
             {
                 <li class="list-group-item d-flex flex-column align-items-start mb-2 rounded shadow-sm">
-                    <div class="fw-semibold">@s.Name</div>
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <span class="fw-semibold">@s.Name</span>
+                        <button class="btn btn-outline-danger btn-sm" @onclick="() => ShowDeleteModal(s.Id)">
+                            Delete
+                        </button>
+                    </div>
                     <div class="text-muted small">Snippet: @s.CodeSnippetTitle</div>
-                    <div class="text-muted small">Participants: @s.Participants.Count</div>
+                    <div class="text-muted small">Participants: @(s.Participants != null ? s.Participants.Count : 0)</div>
                     <a class="btn btn-outline-primary btn-sm mt-2" href="/sessions/@s.Id">
                         <i class="bi bi-eye"></i> Details
                     </a>
@@ -61,12 +85,191 @@
     }
 </div>
 
+@if (showJoinModal)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal d-block" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Join Session</h5>
+                    <button type="button" class="btn-close" @onclick="HideJoinModal"></button>
+                </div>
+                <div class="modal-body">
+                    <InputText class="form-control" placeholder="Enter join code..." @bind-Value="joinCode" />
+                    @if (!string.IsNullOrEmpty(joinError))
+                    {
+                        <div class="alert alert-danger mt-2">@joinError</div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="HideJoinModal">Cancel</button>
+                    <button class="btn btn-success" @onclick="JoinSessionAsync">Join</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (showLeaveModal)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal d-block" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Are you sure?</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Do you really want to leave this session?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="HideLeaveModal">No</button>
+                    <button class="btn btn-danger" @onclick="LeaveSessionAsync">Yes, Leave</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (showDeleteModal)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal d-block" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete session?</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to permanently delete this session? This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="HideDeleteModal">No</button>
+                    <button class="btn btn-danger" @onclick="DeleteSessionAsync">Yes, Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private List<CollabSessionDto>? sessionsParticipating;
     private List<CollabSessionDto>? sessionsOwned;
 
+    private bool showJoinModal = false;
+    private string joinCode = "";
+    private string? joinError = null;
+
+    private bool showLeaveModal = false;
+    private Guid sessionToLeave;
+
+    private bool showDeleteModal = false;
+    private Guid sessionToDelete;
+
+    void ShowJoinModal()
+    {
+        joinCode = "";
+        joinError = null;
+        showJoinModal = true;
+    }
+    void HideJoinModal()
+    {
+        showJoinModal = false;
+        joinError = null;
+    }
+
+    void ShowLeaveModal(Guid sessionId)
+    {
+        sessionToLeave = sessionId;
+        showLeaveModal = true;
+    }
+    void HideLeaveModal()
+    {
+        sessionToLeave = Guid.Empty;
+        showLeaveModal = false;
+    }
+
+    void ShowDeleteModal(Guid sessionId)
+    {
+        sessionToDelete = sessionId;
+        showDeleteModal = true;
+    }
+    void HideDeleteModal()
+    {
+        sessionToDelete = Guid.Empty;
+        showDeleteModal = false;
+    }
+
+    private async Task JoinSessionAsync()
+    {
+        joinError = null;
+        if (string.IsNullOrWhiteSpace(joinCode))
+        {
+            joinError = "Code is required.";
+            return;
+        }
+
+        var response = await Http.PostAsJsonAsync("/api/sessions/join", new JoinSessionDto
+        {
+            JoinCode = joinCode,
+            UserId = UserState.User!.Id
+        });
+
+        if (response.IsSuccessStatusCode)
+        {
+            showJoinModal = false;
+            await ReloadSessions();
+        }
+        else
+        {
+            joinError = "Failed to join session. Invalid code or already joined.";
+        }
+    }
+
+    private async Task LeaveSessionAsync()
+    {
+        if (sessionToLeave == Guid.Empty || UserState.User == null)
+            return;
+
+        var response = await Http.PostAsJsonAsync("/api/sessions/leave", new LeaveSessionDto
+        {
+            SessionId = sessionToLeave,
+            UserId = UserState.User.Id
+        });
+
+        if (response.IsSuccessStatusCode)
+        {
+            showLeaveModal = false;
+            await ReloadSessions();
+        }
+    }
+
+    private async Task DeleteSessionAsync()
+    {
+        if (sessionToDelete == Guid.Empty || UserState.User == null)
+            return;
+
+        var response = await Http.DeleteAsync($"/api/sessions/{sessionToDelete}?userId={UserState.User.Id}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            showDeleteModal = false;
+            await ReloadSessions();
+        }
+        
+    }
+
     protected override async Task OnInitializedAsync()
     {
+        await ReloadSessions();
+    }
+
+    private async Task ReloadSessions()
+    {
+        sessionsParticipating = null;
+        sessionsOwned = null;
+
         if (!UserState.IsAuthenticated || UserState.User is null)
             return;
 
@@ -74,5 +277,17 @@
 
         sessionsParticipating = await Http.GetFromJsonAsync<List<CollabSessionDto>>($"/api/sessions/participating?userId={userId}");
         sessionsOwned = await Http.GetFromJsonAsync<List<CollabSessionDto>>($"/api/sessions/owned?userId={userId}");
+        StateHasChanged();
+    }
+
+    public class JoinSessionDto
+    {
+        public string JoinCode { get; set; } = string.Empty;
+        public Guid UserId { get; set; }
+    }
+    public class LeaveSessionDto
+    {
+        public Guid SessionId { get; set; }
+        public Guid UserId { get; set; }
     }
 }

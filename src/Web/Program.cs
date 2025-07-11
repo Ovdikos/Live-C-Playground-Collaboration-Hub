@@ -9,6 +9,7 @@ using Application.Features.CollabSessions.Query;
 using Application.Mapper;
 using Application.Services;
 using AutoMapper;
+using Core.Entities;
 using Core.Interfaces;
 using FluentValidation;
 using Infrastructure.DbContext;
@@ -226,8 +227,8 @@ app.MapGet("/api/sessions/{id}", async (Guid id, LivePlaygroundDbContext db, IMa
     var session = await db.CollabSessions
         .Include(x => x.CodeSnippet)
         .Include(x => x.Owner)
-        .Include(x => x.EditHistories)
-        .ThenInclude(h => h.EditedByUser)
+        .Include(x => x.EditHistories).ThenInclude(h => h.EditedByUser)
+        .Include(x => x.Participants).ThenInclude(p => p.User)
         .FirstOrDefaultAsync(x => x.Id == id);
 
     if (session == null)
@@ -268,6 +269,67 @@ app.MapGet("/api/sessions/{id}/history", async (
 
     return mapper.Map<List<SessionEditHistoryDto>>(history);
 });
+
+
+// JOIN SESSION
+
+app.MapPost("/api/sessions/join", async (JoinSessionDto dto, LivePlaygroundDbContext db) =>
+{
+    var session = await db.CollabSessions
+        .Include(s => s.Participants)
+        .FirstOrDefaultAsync(s => s.JoinCode == dto.JoinCode);
+
+    if (session == null)
+        return Results.NotFound();
+
+    if (session.Participants.Any(p => p.UserId == dto.UserId))
+        return Results.BadRequest();
+
+    db.CollabParticipants.Add(new CollabParticipant
+    {
+        Id = Guid.NewGuid(),
+        SessionId = session.Id,
+        UserId = dto.UserId,
+        JoinedAt = DateTime.UtcNow
+    });
+    await db.SaveChangesAsync();
+    return Results.Ok();
+});
+
+
+// LEAVE SESIION
+app.MapPost("/api/sessions/leave", async (LeaveSessionDto dto, LivePlaygroundDbContext db) =>
+{
+    var participant = await db.CollabParticipants
+        .FirstOrDefaultAsync(p => p.SessionId == dto.SessionId && p.UserId == dto.UserId);
+
+    if (participant == null)
+        return Results.NotFound();
+
+    db.CollabParticipants.Remove(participant);
+    await db.SaveChangesAsync();
+    return Results.Ok();
+});
+
+
+// DELETE SESSION
+
+app.MapDelete("/api/sessions/{id}", async (Guid id, Guid userId, LivePlaygroundDbContext db) =>
+{
+    var session = await db.CollabSessions
+        .FirstOrDefaultAsync(s => s.Id == id);
+
+    if (session == null)
+        return Results.NotFound();
+
+    if (session.OwnerId != userId)
+        return Results.Forbid();
+
+    db.CollabSessions.Remove(session);
+    await db.SaveChangesAsync();
+    return Results.Ok();
+});
+
 
 
 // app.MapRazorComponents<App>()

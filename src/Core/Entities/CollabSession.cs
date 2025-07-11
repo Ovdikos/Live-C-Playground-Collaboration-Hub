@@ -10,6 +10,8 @@ public class CollabSession
     public DateTime? ExpiresAt { get; set; }         
     public DateTime? EditedAt { get; set; }         
     public bool IsActive { get; set; } = true;
+    
+    public string JoinCode { get; set; } = string.Empty;
 
     
     public User? Owner { get; set; }
