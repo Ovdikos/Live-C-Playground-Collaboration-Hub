@@ -13,11 +13,14 @@
     <title>Live C# Playground</title>
     <link rel="stylesheet" href="~/bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="~/app.css" />
-    <link rel="stylesheet" href="~/favicon.png" />
+    <link rel="icon" type="image/png" href="~/favicon.png" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet" />
     <HeadOutlet />
 </head>
 <body>
 <component type="typeof(App)" render-mode="ServerPrerendered" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+<script src="~/js/cropperInterop.js"></script>
 <script src="_framework/blazor.server.js"></script>
 </body>
 </html>

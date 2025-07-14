@@ -103,34 +103,33 @@ app.UseAntiforgery();
 // Minimal API endpoints
 
 
-// app.MapGet("/test/users/exists", async ([FromQuery] string username, [FromQuery] string email, IUserRepository repo) =>
-// {
-//     var exists = await repo.ExistsByUsernameOrEmail(username, email);
-//     return Results.Ok(new { exists });
-// });
-//
-// app.MapPost("/test/users/add", async ([FromBody] RegisterUserDto dto, IUserRepository repo) =>
-// {
-//     var user = new Core.Entities.User
-//     {
-//         Username     = dto.Username,
-//         Email        = dto.Email,
-//         PasswordHash = "dummy",   // тимчасово
-//         CreatedAt    = DateTime.UtcNow,
-//         IsAdmin      = false
-//     };
-//     await repo.AddAsync(user);
-//     return Results.Created($"/test/users/{user.Id}", user);
-// });
-
-
 // REGISTER
-app.MapPost("/api/auth/register", async (
-    [FromBody] RegisterUserDto dto,
-    IMediator mediator,
-    IJwtTokenService jwt) =>
+app.MapPost("/api/auth/register", async (HttpRequest req, IMediator mediator, IJwtTokenService jwt) =>
 {
-    var cmd = new RegisterUserCommand { Dto = dto };
+    var form = await req.ReadFormAsync();
+    var username = form["Username"];
+    var password = form["Password"];
+    var email = form["Email"];
+
+    var avatar = form.Files.GetFile("Avatar");
+    string? avatarFileName = null;
+    if (avatar != null)
+    {
+        avatarFileName = $"{Guid.NewGuid()}.png";
+        var path = Path.Combine("wwwroot/avatars", avatarFileName);
+        using var stream = File.Create(path);
+        await avatar.CopyToAsync(stream);
+    }
+
+    var dto = new RegisterUserDto
+    {
+        Username = username!,
+        Password = password!,
+        Email = email!,
+        AvatarUrl = avatarFileName 
+    };
+
+    var cmd = new RegisterUserCommand { Dto = dto, Avatar = avatar };
     var user = await mediator.Send(cmd);
     var token = jwt.GenerateToken(user);
     return Results.Ok(new { token, user });
@@ -329,6 +328,12 @@ app.MapDelete("/api/sessions/{id}", async (Guid id, Guid userId, LivePlaygroundD
     await db.SaveChangesAsync();
     return Results.Ok();
 });
+
+
+
+// USER PROFILE
+
+
 
 
 

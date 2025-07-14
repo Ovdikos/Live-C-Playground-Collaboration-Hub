@@ -2,6 +2,7 @@
 @inject HttpClient Http
 @inject NavigationManager Nav
 @inject UserState UserState
+@inject IJSRuntime JS
 
 <EditForm Model="register" OnValidSubmit="HandleRegister" FormName="registerForm">
     <DataAnnotationsValidator />
@@ -9,40 +10,34 @@
 
     <div class="mb-3">
         <label for="username">Username</label>
-        <InputText id="username"
-                   class="form-control"
-                   @bind-Value="register.Username" />
+        <InputText id="username" class="form-control" @bind-Value="register.Username" />
     </div>
-
     <div class="mb-3">
         <label for="password">Password</label>
-        <InputText id="password"
-                   type="password"
-                   class="form-control"
-                   @bind-Value="register.Password" />
+        <InputText id="password" type="password" class="form-control" @bind-Value="register.Password" />
     </div>
-
     <div class="mb-3">
         <label for="email">Email</label>
-        <InputText id="email"
-                   type="email"
-                   class="form-control"
-                   @bind-Value="register.Email" />
+        <InputText id="email" type="email" class="form-control" @bind-Value="register.Email" />
     </div>
-
     <div class="mb-3">
-        <label for="avatar">Avatar URL (optional)</label>
-        <InputText id="avatar"
-                   class="form-control"
-                   @bind-Value="register.AvatarUrl" />
+        <label>Avatar (optional)</label>
+        <InputFile @ref="fileInputRef" OnChange="OnInputFileChange" accept="image/png, image/jpeg" />
+        @if (!string.IsNullOrEmpty(avatarPreview))
+        {
+            <img src="@avatarPreview" style="max-width:150px;max-height:150px;border-radius:50%;margin-top:8px;" />
+        }
     </div>
-
     <button class="btn btn-success w-100" type="submit">Register</button>
-
     <div class="text-center mt-3">
         <a href="/login">Already have an account? Login</a>
     </div>
 </EditForm>
+
+<CropperModal Show="@showCropper"
+              ImageUrl="@cropperImageUrl"
+              OnCrop="@OnAvatarCropped"
+              OnClose="@CloseCropperModal" />
 
 @if (!string.IsNullOrEmpty(error))
 {
@@ -53,10 +48,40 @@
     private Application.DTOs.RegisterUserDto register = new();
     private string? error;
 
+    private IBrowserFile? avatarFile;
+    private string? avatarPreview;
+    private string? avatarBase64;
+    private bool showCropper = false;
+    private string? cropperImageUrl;
+    private InputFile fileInputRef; 
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        avatarFile = e.File;
+        var buffer = new byte[avatarFile.Size];
+        await avatarFile.OpenReadStream(5 * 1024 * 1024).ReadAsync(buffer);
+        cropperImageUrl = $"data:{avatarFile.ContentType};base64,{Convert.ToBase64String(buffer)}";
+        showCropper = true;
+    }
+
+    private async Task OnAvatarCropped(string? croppedBase64)
+    {
+        avatarPreview = croppedBase64;
+        avatarBase64 = croppedBase64;
+        showCropper = false;
+        StateHasChanged();
+    }
+
+    private async Task CloseCropperModal()
+    {
+        showCropper = false;
+        await JS.InvokeVoidAsync("focusElement", fileInputRef);
+        StateHasChanged();
+    }
+
     private async Task HandleRegister()
     {
         error = null;
-
         if (string.IsNullOrWhiteSpace(register.Username) ||
             string.IsNullOrWhiteSpace(register.Password) ||
             string.IsNullOrWhiteSpace(register.Email))
@@ -65,7 +90,21 @@
             return;
         }
 
-        var response = await Http.PostAsJsonAsync("/api/auth/register", register);
+        var content = new MultipartFormDataContent();
+        content.Add(new StringContent(register.Username), "Username");
+        content.Add(new StringContent(register.Password), "Password");
+        content.Add(new StringContent(register.Email), "Email");
+
+        if (!string.IsNullOrEmpty(avatarBase64))
+        {
+            var base64Data = avatarBase64.Substring(avatarBase64.IndexOf(",") + 1);
+            var bytes = Convert.FromBase64String(base64Data);
+            var byteContent = new ByteArrayContent(bytes);
+            byteContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
+            content.Add(byteContent, "Avatar", "avatar.png");
+        }
+
+        var response = await Http.PostAsync("/api/auth/register", content);
 
         if (!response.IsSuccessStatusCode)
         {

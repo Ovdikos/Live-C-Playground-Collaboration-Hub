@@ -30,6 +30,7 @@
 
     <ItemGroup>
       <AdditionalFiles Include="Pages\App.razor" />
+      <AdditionalFiles Include="Pages\CropperModal.razor" />
       <AdditionalFiles Include="Pages\Home.razor" />
       <AdditionalFiles Include="Pages\Login.razor" />
       <AdditionalFiles Include="Pages\Register.razor" />

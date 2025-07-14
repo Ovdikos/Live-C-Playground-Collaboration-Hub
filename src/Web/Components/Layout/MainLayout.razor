@@ -1,13 +1,19 @@
 ﻿@inherits LayoutComponentBase
 
-@if (UserState.IsAuthenticated)
-{
-    <NavMenu />
-}
+<div class="layout-root">
+    <header>
+        @if (UserState.IsAuthenticated)
+        {
+            <NavMenu />
+        }
+        <Register />
+        <Login />
+    </header>
 
-<main class="container py-4">
-    @Body
-</main>
+    <main class="main-full py-4">
+        @Body
+    </main>
+</div>
 
 @code {
     [Inject] public UserState UserState { get; set; } = default!;
