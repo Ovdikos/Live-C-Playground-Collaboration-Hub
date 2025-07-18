@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Application.DTOs;
+using Application.Features.Admin.Queries;
 using Application.Features.Auth.Commands;
 using Application.Features.Auth.Queries;
 using Application.Features.CodeSnippets.Commands;
@@ -44,6 +45,7 @@ builder.Services.AddScoped<ICodeSnippetRepository, CodeSnippetRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<ICollabParticipantRepository, CollabParticipantRepository>();
+builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 
 
 // HTTP CLIENT
@@ -386,6 +388,24 @@ app.MapPut("/api/user/profile", async (
 
     return Results.Ok(new { token, user = updatedDto });
 });
+
+
+// ADMIN
+
+
+app.MapGet("/api/admin/users", async (
+        [AsParameters] GetUsersQuery query, 
+        IMediator mediator,
+        HttpContext httpContext
+    ) =>
+    {
+        var isAdmin = httpContext.User.Claims.Any(c => c.Type == "isAdmin" && c.Value == "True");
+        if (!isAdmin)
+            return Results.Forbid();
+
+        var users = await mediator.Send(query);
+        return Results.Ok(users);
+    }) .RequireAuthorization();
 
 
 

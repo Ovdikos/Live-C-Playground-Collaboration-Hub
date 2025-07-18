@@ -21,6 +21,14 @@ else
 
         <button class="btn btn-outline-danger btn-sm" style="margin-left:0.5rem;" @onclick="Logout">Exit</button>
     </div>
+    
+    @if (UserState.User?.IsAdmin == true)
+    {
+        <button class="btn btn-warning btn-lg" @onclick="@(()=>Nav.NavigateTo("/admin"))">
+            Admin Panel
+        </button>
+    }
+
 
     <div class="d-flex flex-column align-items-center justify-content-center" style="min-height:60vh;">
         <h1 class="mb-4 mt-3">Welcome, @UserState.User?.Username!</h1>

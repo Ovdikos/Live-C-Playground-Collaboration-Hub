@@ -1,0 +1,175 @@
+﻿@page "/admin"
+@inject UserState UserState
+@inject NavigationManager Nav
+@inject HttpClient Http
+
+@if (!isLoaded)
+{
+    <div style="margin-top:50px; text-align:center;">
+        <span>Loading...</span>
+    </div>
+}
+else if (UserState.User?.IsAdmin != true)
+{
+    Nav.NavigateTo("/");
+}
+else
+{
+    <div class="admin-panel-container">
+        <h1 class="admin-title">Admin Panel</h1>
+
+        <div class="admin-tabs">
+            <button class="admin-tab-btn @(activeTab == "users" ? "active" : "")" @onclick="@(() => SetTab("users"))">Users</button>
+            <button class="admin-tab-btn @(activeTab == "snippets" ? "active" : "")" @onclick="@(() => SetTab("snippets"))">Snippets</button>
+            <button class="admin-tab-btn @(activeTab == "sessions" ? "active" : "")" @onclick="@(() => SetTab("sessions"))">Sessions</button>
+            <button class="admin-tab-btn @(activeTab == "stats" ? "active" : "")" @onclick="@(() => SetTab("stats"))">Stats</button>
+        </div>
+
+        <div class="admin-content">
+            @if (activeTab == "users")
+            {
+                <h3>Users List</h3>
+                @if (users == null)
+                {
+                    <span>Loading users...</span>
+                }
+                else if (users.Count == 0)
+                {
+                    <span>No users found.</span>
+                }
+                else
+                {
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th @onclick="@(() => SortBy("id"))" style="cursor:pointer;">
+                                    ID @SortIcon("id")
+                                </th>
+                                <th @onclick="@(() => SortBy("username"))" style="cursor:pointer;">
+                                    Username @SortIcon("username")
+                                </th>
+                                <th @onclick="@(() => SortBy("email"))" style="cursor:pointer;">
+                                    Email @SortIcon("email")
+                                </th>
+                                <th @onclick="@(() => SortBy("createdat"))" style="cursor:pointer;">
+                                    Created At @SortIcon("createdat")
+                                </th>
+                                <th @onclick="@(() => SortBy("isadmin"))" style="cursor:pointer;">
+                                    IsAdmin @SortIcon("isadmin")
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var u in users)
+                        {
+                            <tr>
+                                <td>@u.Id</td>
+                                <td>@u.Username</td>
+                                <td>@u.Email</td>
+                                <td>@u.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@(u.IsAdmin ? "Yes" : "No")</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                }
+            }
+            else if (activeTab == "snippets")
+            {
+                <p>Snippets management here...</p>
+            }
+            else if (activeTab == "sessions")
+            {
+                <p>Sessions management here...</p>
+            }
+            else if (activeTab == "stats")
+            {
+                <p>Statistics and analytics here...</p>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private string activeTab = "users";
+    private bool isLoaded = false;
+    private bool initialized = false;
+
+    private List<UserDto>? users;
+
+    private string? orderBy = null;
+    private bool desc = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!initialized)
+        {
+            initialized = true;
+            await UserState.InitializeAsync();
+            isLoaded = true;
+            if (UserState.User?.IsAdmin == true)
+            {
+                await LoadUsers();
+            }
+            StateHasChanged();
+        }
+    }
+
+    private void SetTab(string tab)
+    {
+        activeTab = tab;
+        if (tab == "users")
+            _ = LoadUsers();
+        // TODO: same for snippets and sessions
+    }
+
+    private async Task SortBy(string field)
+    {
+        if (orderBy == field)
+            desc = !desc;
+        else
+        {
+            orderBy = field;
+            desc = false;
+        }
+        await LoadUsers();
+    }
+
+    private RenderFragment SortIcon(string field) => builder =>
+    {
+        if (orderBy == field)
+        {
+            builder.OpenElement(0, "span");
+            builder.AddAttribute(1, "style", "font-size:12px;margin-left:4px;");
+            builder.AddContent(2, desc ? "▼" : "▲");
+            builder.CloseElement();
+        }
+    };
+
+    private async Task LoadUsers()
+    {
+        users = null;
+        Http.DefaultRequestHeaders.Authorization = null;
+        Http.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", UserState.Token);
+
+        var url = "/api/admin/users";
+        var queryParams = new List<string>();
+        if (!string.IsNullOrEmpty(orderBy))
+            queryParams.Add($"orderBy={orderBy}");
+        if (desc)
+            queryParams.Add("desc=true");
+        if (queryParams.Count > 0)
+            url += "?" + string.Join("&", queryParams);
+
+        try
+        {
+            users = await Http.GetFromJsonAsync<List<UserDto>>(url);
+        }
+        catch
+        {
+            users = new List<UserDto>();
+        }
+        StateHasChanged();
+    }
+}
