@@ -41,16 +41,27 @@
     private CreateSessionCommand session = new();
     private List<SnippetDto> snippets = new();
     private string? error;
+    private bool initialized = false;
+    private bool isLoaded = false;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!UserState.IsAuthenticated || UserState.User is null)
+        if (!initialized)
         {
-            Nav.NavigateTo("/login");
-            return;
+            initialized = true;
+            await UserState.InitializeAsync();
+            
+            if (!UserState.IsAuthenticated || UserState.User is null)
+            {
+                Nav.NavigateTo("/login");
+                return;
+            }
+            snippets = await Http.GetFromJsonAsync<List<SnippetDto>>($"/api/snippets?ownerId={UserState.User.Id}");
+            session.OwnerId = UserState.User.Id;
+
+            isLoaded = true;
+            StateHasChanged();
         }
-        snippets = await Http.GetFromJsonAsync<List<SnippetDto>>($"/api/snippets?ownerId={UserState.User.Id}");
-        session.OwnerId = UserState.User.Id;
     }
 
     private async Task HandleCreate()

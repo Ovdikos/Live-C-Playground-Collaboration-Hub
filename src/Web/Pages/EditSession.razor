@@ -56,22 +56,35 @@ else
     private EditSessionCommand session = new();
     private List<SessionEditHistoryDto> history = new();
     private string? error;
+    private bool initialized = false;
+    private bool isLoaded = false;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var dto = await Http.GetFromJsonAsync<CollabSessionDto>($"/api/sessions/{Id}");
-        if (dto == null)
+        if (!initialized)
         {
-            error = "Session not found";
-            return;
-        }
-        session.SessionId = dto.Id;
-        session.Name = dto.Name;
-        session.Content = dto.Content ?? "";
-        session.EditedByUserId = UserState.User!.Id;
-        session.Changes = "";
+            initialized = true;
+            await UserState.InitializeAsync();
+            
+            var dto = await Http.GetFromJsonAsync<CollabSessionDto>($"/api/sessions/{Id}");
+            if (dto == null)
+            {
+                error = "Session not found";
+                return;
+            }
+            session.SessionId = dto.Id;
+            session.Name = dto.Name;
+            session.Content = dto.Content ?? "";
+            session.EditedByUserId = UserState.User!.Id;
+            session.Changes = "";
 
-        history = await Http.GetFromJsonAsync<List<SessionEditHistoryDto>>($"/api/sessions/{Id}/history");
+            history = await Http.GetFromJsonAsync<List<SessionEditHistoryDto>>($"/api/sessions/{Id}/history");
+
+            isLoaded = true;
+            StateHasChanged();
+        }
+        
+        
     }
 
     private async Task HandleEdit()

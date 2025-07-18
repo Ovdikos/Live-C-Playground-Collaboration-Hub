@@ -26,7 +26,7 @@ public class JwtTokenService : IJwtTokenService
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),
             new Claim(ClaimTypes.Email, user.Email),
-            new Claim("isAdmin", user.IsAdmin.ToString()),
+            new Claim("isAdmin", user.IsAdmin.ToString())
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_key));

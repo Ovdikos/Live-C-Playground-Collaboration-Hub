@@ -1,0 +1,175 @@
+﻿@page "/user/profile"
+@using System.Net.Http.Headers
+@using System.Text.Json
+@inject UserState UserState
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+@if (!isLoaded)
+{
+    <div class="profile-container" style="text-align:center;">Loading...</div>
+}
+else if (UserState.User is null)
+{
+    <div class="profile-container">
+        <div class="profile-title">You are not logged in.</div>
+    </div>
+}
+else
+{
+    <div class="profile-container">
+        <div class="profile-title">My Profile</div>
+        <EditForm EditContext="@editContext" class="profile-form">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <label class="profile-label">Username:</label>
+            <InputText class="profile-input" @bind-Value="editModel.Username"/>
+
+            <label class="profile-label">Email:</label>
+            <InputText class="profile-input" @bind-Value="editModel.Email"/>
+
+            <label class="profile-label">Password:</label>
+            <div class="profile-password-group">
+                <InputText class="profile-input" style="flex:1" @bind-Value="editModel.Password" type="@passwordInputType"/>
+                <button type="button" class="profile-show-btn" @onclick="TogglePassword">@((showPassword ? "Hide" : "Show"))</button>
+            </div>
+
+            <label class="profile-label">Avatar:</label>
+            <div class="profile-upload">
+                <img class="profile-avatar-preview" src="@avatarPreview" alt="Avatar"/>
+                <InputFile class="mt-2" OnChange="OnAvatarChange" accept="image/png, image/jpeg"/>
+            </div>
+
+            <div class="profile-actions">
+                <button type="button" class="profile-menu-btn" @onclick="GoToMenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24">
+                        <rect y="6" width="24" height="2" rx="1" fill="#3A86FF"/>
+                        <rect y="11" width="24" height="2" rx="1" fill="#3A86FF"/>
+                        <rect y="16" width="24" height="2" rx="1" fill="#3A86FF"/>
+                    </svg>
+                    Menu
+                </button>
+                <button type="button" class="profile-btn" @onclick="ManualSubmit">Save</button>
+            </div>
+            @if (!string.IsNullOrEmpty(error))
+            {
+                <div style="color:#db3434; font-weight:600;">@error</div>
+            }
+            @if (success)
+            {
+                <div style="color:#16aa52; font-weight:600;">Profile updated!</div>
+            }
+        </EditForm>
+    </div>
+}
+
+@code {
+    private UpdateUserDto editModel = new();
+    private EditContext? editContext;
+    private string avatarPreview = "";
+    private string? newAvatarBase64;
+    private string passwordInputType = "password";
+    private bool showPassword = false;
+    private string? error;
+    private bool success = false;
+    private bool isLoaded = false;
+    private bool initialized = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!initialized)
+        {
+            initialized = true;
+            await UserState.InitializeAsync();
+            if (UserState.User is not null)
+            {
+                editModel.Username = UserState.User.Username;
+                editModel.Email = UserState.User.Email;
+                avatarPreview = $"/avatars/{UserState.User.AvatarFileName ?? "default_avatar.png"}";
+                editContext = new EditContext(editModel);
+            }
+            isLoaded = true;
+            StateHasChanged();
+        }
+    }
+
+    private void TogglePassword()
+    {
+        showPassword = !showPassword;
+        passwordInputType = showPassword ? "text" : "password";
+    }
+
+    private async Task OnAvatarChange(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        var buffer = new byte[file.Size];
+        await file.OpenReadStream(5 * 1024 * 1024).ReadAsync(buffer);
+        newAvatarBase64 = $"data:{file.ContentType};base64,{Convert.ToBase64String(buffer)}";
+        avatarPreview = newAvatarBase64;
+        editModel.AvatarBase64 = newAvatarBase64;
+    }
+
+    private async Task ManualSubmit()
+    {
+        error = null;
+        success = false;
+        if (editContext?.Validate() ?? false)
+        {
+            await UpdateProfile();
+        }
+        else
+        {
+            error = "Please fix validation errors!";
+        }
+
+        await Logout();
+    }
+
+    private async Task UpdateProfile()
+    {
+        var token = UserState.Token;
+        Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var resp = await Http.PutAsJsonAsync("/api/user/profile", editModel);
+        var json = await resp.Content.ReadAsStringAsync();
+
+        if (!resp.IsSuccessStatusCode)
+        {
+            error = json;
+            Console.Write(error);
+            return;
+        }
+
+        try
+        {
+            var result = JsonSerializer.Deserialize<AuthResult>(json);
+            if (result is not null)
+            {
+                await UserState.SetAuthAsync(result.token, result.user);
+                success = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Exception: " + ex.Message);
+            error = "Invalid server response: " + ex.Message;
+        }
+    }
+
+    public class AuthResult
+    {
+        public string token { get; set; } = default!;
+        public UserDto user { get; set; } = default!;
+    }
+
+    private void GoToMenu()
+    {
+        Nav.NavigateTo("/");
+    }
+    
+    private async Task Logout()
+    {
+        await UserState.LogoutAsync();
+        Nav.NavigateTo("/login", true);
+    }
+}

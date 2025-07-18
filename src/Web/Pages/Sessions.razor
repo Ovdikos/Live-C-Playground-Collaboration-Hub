@@ -166,6 +166,9 @@
 
     private bool showDeleteModal = false;
     private Guid sessionToDelete;
+    
+    private bool initialized = false;
+    private bool isLoaded = false;
 
     void ShowJoinModal()
     {
@@ -260,9 +263,18 @@
         
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await ReloadSessions();
+        if (!initialized)
+        {
+            initialized = true;
+            await UserState.InitializeAsync();
+            
+            await ReloadSessions();
+
+            isLoaded = true;
+            StateHasChanged();
+        }
     }
 
     private async Task ReloadSessions()

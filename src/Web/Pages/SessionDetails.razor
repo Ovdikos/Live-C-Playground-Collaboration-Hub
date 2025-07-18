@@ -1,20 +1,35 @@
 ﻿@page "/sessions/{Id:guid}"
 @inject HttpClient Http
+@inject UserState UserState
+
 
 @code {
     [Parameter] public Guid Id { get; set; }
     private CollabSessionDto? session;
     private string? error;
+    private bool initialized = false;
+    private bool isLoaded = false;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        try
+
+        if (!initialized)
         {
-            session = await Http.GetFromJsonAsync<CollabSessionDto>($"/api/sessions/{Id}");
-        }
-        catch
-        {
-            error = "Failed to load session.";
+            initialized = true;
+            await UserState.InitializeAsync();
+            
+            try
+            {
+                session = await Http.GetFromJsonAsync<CollabSessionDto>($"/api/sessions/{Id}");
+            }
+            catch
+            {
+                error = "Failed to load session.";
+            }
+
+            isLoaded = true;
+            StateHasChanged();
+
         }
     }
 }

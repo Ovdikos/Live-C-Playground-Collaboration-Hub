@@ -1,5 +1,6 @@
 ﻿@page "/snippets/{Id:guid}"
 @inject HttpClient Http
+@inject UserState UserState
 
 @using Application.DTOs
 
@@ -9,19 +10,31 @@
 
     private SnippetDto? snippet;
     private string? error;
+    private bool initialized = false;
+    private bool isLoaded = false;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        try
+        if (!initialized)
         {
-            snippet = await Http.GetFromJsonAsync<SnippetDto>($"/api/snippets/{Id}");
-            if (snippet == null)
-                error = "Snippet not found!";
+            initialized = true;
+            await UserState.InitializeAsync();
+            try
+            {
+            
+                snippet = await Http.GetFromJsonAsync<SnippetDto>($"/api/snippets/{Id}");
+                if (snippet == null)
+                    error = "Snippet not found!";
+            }
+            catch
+            {
+                error = "Failed to load snippet.";
+            }
+
+            isLoaded = true;
+            StateHasChanged();
         }
-        catch
-        {
-            error = "Failed to load snippet.";
-        }
+        
     }
 }
 

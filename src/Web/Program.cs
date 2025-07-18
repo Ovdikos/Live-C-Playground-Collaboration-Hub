@@ -1,3 +1,5 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 using Application.DTOs;
 using Application.Features.Auth.Commands;
@@ -20,10 +22,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Web.AuthService;
 using Web.Components;
 using Web.Pages;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
 // Registering services
 // builder.Services.AddRazorComponents()
@@ -48,8 +53,9 @@ builder.Services.AddScoped<HttpClient>(sp =>
     return new HttpClient { BaseAddress = new Uri(navManager.BaseUri) };
 });
 
-// UserState Service
+// Auth Service
 builder.Services.AddScoped<UserState>();
+builder.Services.AddScoped<LocalStorageService>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(cfg =>
@@ -332,6 +338,54 @@ app.MapDelete("/api/sessions/{id}", async (Guid id, Guid userId, LivePlaygroundD
 
 
 // USER PROFILE
+
+app.MapPut("/api/user/profile", async (
+    HttpContext http,
+    [FromBody] UpdateUserDto dto,
+    IUserRepository repo,
+    IJwtTokenService jwt,
+    IMapper mapper
+) =>
+{
+        
+    var userIdStr = http.User.Claims
+        .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+    if (userIdStr == null || !Guid.TryParse(userIdStr, out var userId))
+        return Results.Unauthorized();
+
+    var user = await repo.GetByIdAsync(userId);
+    if (user == null)
+        return Results.NotFound();
+
+    if (dto.Username != user.Username && await repo.GetByUsernameAsync(dto.Username) is not null)
+        return Results.BadRequest("Username already taken");
+    if (dto.Email != user.Email && await repo.GetAllAsync() is var all && all.Any(u => u.Email == dto.Email))
+        return Results.BadRequest("Email already taken");
+
+    user.Username = dto.Username;
+    user.Email = dto.Email;
+
+    if (!string.IsNullOrWhiteSpace(dto.Password))
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+
+    if (!string.IsNullOrWhiteSpace(dto.AvatarBase64))
+    {
+        var ext = ".png";
+        var fileName = $"{user.Id}{ext}";
+        var filePath = Path.Combine("wwwroot/avatars", fileName);
+        var base64Data = dto.AvatarBase64.Substring(dto.AvatarBase64.IndexOf(",") + 1);
+        var bytes = Convert.FromBase64String(base64Data);
+        await File.WriteAllBytesAsync(filePath, bytes);
+        user.AvatarFileName = fileName;
+    }
+
+    await repo.UpdateAsync(user);
+
+    var updatedDto = mapper.Map<UserDto>(user);
+    var token = jwt.GenerateToken(updatedDto);
+
+    return Results.Ok(new { token, user = updatedDto });
+});
 
 
 

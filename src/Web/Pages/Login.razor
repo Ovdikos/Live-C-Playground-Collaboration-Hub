@@ -42,7 +42,7 @@
         var result = await response.Content.ReadFromJsonAsync<AuthResult>();
         if (result is not null)
         {
-            UserState.SetAuth(result.token, result.user);
+            await UserState.SetAuthAsync(result.token, result.user);
             Nav.NavigateTo("/");
         }
     }

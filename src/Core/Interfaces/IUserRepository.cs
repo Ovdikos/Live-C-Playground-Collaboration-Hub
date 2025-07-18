@@ -10,6 +10,8 @@ public interface IUserRepository
     Task<User?> GetByUsernameAsync(string username);
     Task<User?> GetByIdAsync(Guid id);
     
+    Task UpdateAsync(User user);
+    
     
     // For admin
     Task<List<User>> GetAllAsync();

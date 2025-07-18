@@ -68,17 +68,29 @@ else
 
 @code {
     private List<SnippetDto>? snippets;
+    private bool initialized = false;
+    private bool isLoaded = false;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!UserState.IsAuthenticated)
-            return;
-        var ownerId = UserState.User?.Id.ToString();
-        if (ownerId is null)
-            return;
-        Http.DefaultRequestHeaders.Authorization =
-            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", UserState.Token);
-        snippets = await Http.GetFromJsonAsync<List<SnippetDto>>($"/api/snippets?ownerId={ownerId}");
+        if (!initialized)
+        {
+            initialized = true;
+            await UserState.InitializeAsync();
+            
+            if (!UserState.IsAuthenticated)
+                return;
+            var ownerId = UserState.User?.Id.ToString();
+            if (ownerId is null)
+                return;
+            Http.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", UserState.Token);
+            snippets = await Http.GetFromJsonAsync<List<SnippetDto>>($"/api/snippets?ownerId={ownerId}");
+
+            isLoaded = true;
+            StateHasChanged();
+        }
+        
     }
 
     private async Task DeleteSnippet(Guid id)

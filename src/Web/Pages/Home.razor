@@ -2,29 +2,23 @@
 @inject UserState UserState
 @inject NavigationManager Nav
 
-@if (!UserState.IsAuthenticated)
+@if (!isLoaded)
+{
+    <div style="margin-top:50px; text-align:center;">
+        <span>Loading...</span>
+    </div>
+}
+else if (!UserState.IsAuthenticated)
 {
     Nav.NavigateTo("/login", true);
 }
 else
 {
-    <div style="
-        position: fixed;
-        top: 24px;
-        right: 40px;
-        z-index: 1001;
-        background: rgba(0,255,224,0.76);
-        box-shadow: 0 4px 32px rgba(0,0,0,0.07);
-        border-radius: 2rem;
-        padding: 0.5rem 1.3rem 0.5rem 0.7rem;
-        display: flex;
-        align-items: center;
-        gap: 1.1rem;
-        min-width: 230px;
-    ">
+    <div class="userbar-container">
         <img src="@($"/avatars/{UserState.User?.AvatarFileName ?? "default_avatar.png"}")"
              class="rounded-circle" style="width:48px;height:48px;object-fit:cover;" />
-        <span class="fw-semibold" style="font-size:1.25rem;">@UserState.User?.Username</span>
+        <span class="fw-semibold profile-link" @onclick="GoToProfile" style="cursor:pointer;">@UserState.User?.Username</span>
+
         <button class="btn btn-outline-danger btn-sm" style="margin-left:0.5rem;" @onclick="Logout">Exit</button>
     </div>
 
@@ -38,11 +32,29 @@ else
 }
 
 @code {
-    private void Logout()
+    private bool isLoaded = false;
+    private bool initialized = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        UserState.Logout();
+        if (!initialized)
+        {
+            initialized = true;
+            await UserState.InitializeAsync();
+            isLoaded = true;
+            StateHasChanged(); 
+        }
+    }
+    
+    private void GoToProfile()
+    {
+        Nav.NavigateTo("/user/profile");
+    }
+
+
+    private async Task Logout()
+    {
+        await UserState.LogoutAsync();
         Nav.NavigateTo("/login", true);
     }
 }
-
-

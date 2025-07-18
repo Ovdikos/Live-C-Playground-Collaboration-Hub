@@ -42,31 +42,44 @@ else
 
     private UpdateCodeSnippetCommand? snippet;
     private string? error;
+    private bool initialized = false;
+    private bool isLoaded = false;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        Http.DefaultRequestHeaders.Authorization =
-            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", UserState.Token);
 
-        try
+        if (!initialized)
         {
-            var data = await Http.GetFromJsonAsync<SnippetDto>($"/api/snippets/{Id}");
-            if (data == null)
+            initialized = true;
+            await UserState.InitializeAsync();
+            
+            Http.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", UserState.Token);
+
+            try
             {
-                error = "Snippet not found.";
-                return;
+                var data = await Http.GetFromJsonAsync<SnippetDto>($"/api/snippets/{Id}");
+                if (data == null)
+                {
+                    error = "Snippet not found.";
+                    return;
+                }
+                snippet = new UpdateCodeSnippetCommand
+                {
+                    Id = data.Id,
+                    Title = data.Title,
+                    Content = data.Content,
+                    IsPublic = data.IsPublic
+                };
             }
-            snippet = new UpdateCodeSnippetCommand
+            catch
             {
-                Id = data.Id,
-                Title = data.Title,
-                Content = data.Content,
-                IsPublic = data.IsPublic
-            };
-        }
-        catch
-        {
-            error = "Error loading snippet.";
+                error = "Error loading snippet.";
+            }
+
+            isLoaded = true;
+            StateHasChanged();
+
         }
     }
 
