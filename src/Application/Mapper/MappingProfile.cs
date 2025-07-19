@@ -15,7 +15,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.OwnerName, opt => 
                 opt.MapFrom(src => src.Owner.Username));
         CreateMap<CollabParticipant, CollabParticipantDto>()
-            .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.User.Username));
+            .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.User.Username))
+            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email));
         CreateMap<SessionEditHistory, SessionEditHistoryDto>()
             .ForMember(dest => dest.EditedByUsername, opt => opt.MapFrom(src => src.EditedByUser.Username));
         CreateMap<CollabSession, CollabSessionDto>()
@@ -33,6 +34,12 @@ public class MappingProfile : Profile
         CreateMap<CollabSession, SessionDetailsDto>()
             .ForMember(dest => dest.Owner, opt => opt.MapFrom(src => src.Owner.Username))
             .ForMember(dest => dest.CodeSnippetTitle, opt => opt.MapFrom(src => src.CodeSnippet.Title));
+        CreateMap<CollabSession, CollabSessionDetailsDto>()
+            .ForMember(dest => dest.OwnerName, opt => opt.MapFrom(src => src.Owner.Username))
+            .ForMember(dest => dest.CodeSnippetTitle, opt => opt.MapFrom(src => src.CodeSnippet.Title))
+            .ForMember(dest => dest.CodeSnippetContent, opt => opt.MapFrom(src => src.CodeSnippet.Content))
+            .ForMember(dest => dest.Participants, opt => opt.MapFrom(src => src.Participants))
+            .ForMember(dest => dest.EditHistories, opt => opt.MapFrom(src => src.EditHistories));
     }
     
 }

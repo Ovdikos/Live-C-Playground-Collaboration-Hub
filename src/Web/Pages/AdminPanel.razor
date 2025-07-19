@@ -32,7 +32,6 @@ else
                     <h3 style="margin: 0;">Users List</h3>
                     <button class="btn btn-primary" style="height: 2.2rem;" @onclick="ShowFindUserModal">Find User</button>
                 </div>
-
                 @if (users == null)
                 {
                     <span>Loading users...</span>
@@ -46,21 +45,11 @@ else
                     <table class="table">
                         <thead>
                         <tr>
-                            <th @onclick="@(() => SortBy("id"))" style="cursor:pointer;">
-                                ID @SortIcon("id")
-                            </th>
-                            <th @onclick="@(() => SortBy("username"))" style="cursor:pointer;">
-                                Username @SortIcon("username")
-                            </th>
-                            <th @onclick="@(() => SortBy("email"))" style="cursor:pointer;">
-                                Email @SortIcon("email")
-                            </th>
-                            <th @onclick="@(() => SortBy("createdat"))" style="cursor:pointer;">
-                                Created At @SortIcon("createdat")
-                            </th>
-                            <th @onclick="@(() => SortBy("isadmin"))" style="cursor:pointer;">
-                                IsAdmin @SortIcon("isadmin")
-                            </th>
+                            <th @onclick="@(() => SortBy("id"))" style="cursor:pointer;">ID @SortIcon("id")</th>
+                            <th @onclick="@(() => SortBy("username"))" style="cursor:pointer;">Username @SortIcon("username")</th>
+                            <th @onclick="@(() => SortBy("email"))" style="cursor:pointer;">Email @SortIcon("email")</th>
+                            <th @onclick="@(() => SortBy("createdat"))" style="cursor:pointer;">Created At @SortIcon("createdat")</th>
+                            <th @onclick="@(() => SortBy("isadmin"))" style="cursor:pointer;">IsAdmin @SortIcon("isadmin")</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -130,7 +119,68 @@ else
             }
             else if (activeTab == "sessions")
             {
-                <p>Sessions management here...</p>
+                <div>
+                    <h3>Sessions Management</h3>
+                    <div style="margin-bottom: 1rem;">
+                        <input class="form-control" style="width:180px;display:inline;margin-right:8px;"
+                               @bind="sessionSearch" placeholder="Search..." />
+                        <select class="form-control" style="width:120px;display:inline;margin-right:8px;"
+                                @bind="sessionIsActive">
+                            <option value="">All</option>
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                        </select>
+                        <input class="form-control" style="width:160px;display:inline;margin-right:8px;"
+                               type="number" min="0" @bind="minParticipants" placeholder="Min participants" />
+                        <button class="btn btn-primary" @onclick="LoadSessions">Filter</button>
+                    </div>
+
+                    @if (isLoadingSessions)
+                    {
+                        <span>Loading sessions...</span>
+                    }
+                    else if (sessions is null || sessions.Count == 0)
+                    {
+                        <span>No sessions found.</span>
+                    }
+                    else
+                    {
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Snippet</th>
+                                <th>Created At</th>
+                                <th>Expires</th>
+                                <th>Active</th>
+                                <th>Join Code</th>
+                                <th>Owner</th>
+                                <th>Participants</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var sess in sessions)
+                            {
+                                <tr>
+                                    <td>@sess.Name</td>
+                                    <td>@sess.CodeSnippetTitle</td>
+                                    <td>@sess.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td>@(sess.ExpiresAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")</td>
+                                    <td>@(sess.IsActive ? "Yes" : "No")</td>
+                                    <td>@sess.JoinCode</td>
+                                    <td>@sess.OwnerName</td>
+                                    <td>
+                                        @foreach (var p in sess.Participants)
+                                        {
+                                            <div>@p.Username (@p.Email)</div>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    }
+                </div>
             }
             else if (activeTab == "stats")
             {
@@ -168,13 +218,22 @@ else
     private string? orderBy = null;
     private bool desc = false;
 
+    //FIND USER
     private bool showFindUserModal = false;
     private string findUserName = "";
     private string findUserError = "";
 
+    // SNIPPETS
     private List<SnippetDto>? snippets;
     private bool? filterIsPublic = null;
     private bool snippetsLoading = false;
+
+    // SESSIONS
+    private List<CollabSessionDetailsDto>? sessions;
+    private string? sessionSearch = null;
+    private bool? sessionIsActive = null;
+    private int? minParticipants = null;
+    private bool isLoadingSessions = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -188,6 +247,8 @@ else
                 await LoadUsers();
                 if (activeTab == "snippets")
                     await LoadSnippets();
+                if (activeTab == "sessions")
+                    await LoadSessions();
             }
             StateHasChanged();
         }
@@ -200,6 +261,8 @@ else
             _ = LoadUsers();
         else if (tab == "snippets")
             _ = LoadSnippets();
+        else if (tab == "sessions")
+            _ = LoadSessions();
     }
 
     private async Task SortBy(string field)
@@ -280,6 +343,31 @@ else
     {
         filterIsPublic = isPublic;
         await LoadSnippets();
+    }
+
+    private async Task LoadSessions()
+    {
+        isLoadingSessions = true;
+        sessions = null;
+        StateHasChanged();
+        Http.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", UserState.Token);
+
+        var url = "/api/admin/sessions?";
+        if (!string.IsNullOrWhiteSpace(sessionSearch)) url += $"search={sessionSearch}&";
+        if (sessionIsActive.HasValue) url += $"isActive={sessionIsActive}&";
+        if (minParticipants.HasValue) url += $"minParticipants={minParticipants}&";
+
+        try
+        {
+            sessions = await Http.GetFromJsonAsync<List<CollabSessionDetailsDto>>(url);
+        }
+        catch
+        {
+            sessions = new List<CollabSessionDetailsDto>();
+        }
+        isLoadingSessions = false;
+        StateHasChanged();
     }
 
     private void ShowFindUserModal()

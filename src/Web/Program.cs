@@ -472,6 +472,26 @@ app.MapGet("/api/admin/snippets", async (
 }).RequireAuthorization();
 
 
+//Get all sessions
+
+app.MapGet("/api/admin/sessions", async (
+    [FromQuery] string? search,
+    [FromQuery] bool? isActive,
+    [FromQuery] DateTime? createdFrom,
+    [FromQuery] DateTime? createdTo,
+    [FromQuery] int? minParticipants,
+    IMediator mediator,
+    HttpContext httpContext
+) =>
+{
+    var isAdmin = httpContext.User.Claims.Any(c => c.Type == "isAdmin" && c.Value == "True");
+    if (!isAdmin) return Results.Forbid();
+
+    var sessions = await mediator.Send(new GetAllSessionsQuery(search, isActive, createdFrom, createdTo, minParticipants));
+    return Results.Ok(sessions);
+}).RequireAuthorization();
+
+
 
 
 

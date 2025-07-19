@@ -98,4 +98,34 @@ public class AdminRepository : IAdminRepository
             .OrderByDescending(s => s.CreatedAt)
             .ToListAsync();
     }
+
+    public async Task<List<CollabSession>> GetAllSessionsAsync(string? search = null, bool? isActive = null, DateTime? createdFrom = null,
+        DateTime? createdTo = null, int? minParticipants = null)
+    {
+        var query = _db.CollabSessions
+            .Include(s => s.Owner)
+            .Include(s => s.CodeSnippet)
+            .Include(s => s.Participants).ThenInclude(p => p.User)
+            .Include(s => s.EditHistories)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+            query = query.Where(s => s.Name.Contains(search) || s.CodeSnippet.Title.Contains(search));
+
+        if (isActive.HasValue)
+            query = query.Where(s => s.IsActive == isActive.Value);
+
+        if (createdFrom.HasValue)
+            query = query.Where(s => s.CreatedAt >= createdFrom.Value);
+
+        if (createdTo.HasValue)
+            query = query.Where(s => s.CreatedAt <= createdTo.Value);
+
+        if (minParticipants.HasValue)
+            query = query.Where(s => s.Participants.Count >= minParticipants);
+
+        query = query.OrderByDescending(s => s.CreatedAt);
+
+        return await query.ToListAsync();
+    }
 }

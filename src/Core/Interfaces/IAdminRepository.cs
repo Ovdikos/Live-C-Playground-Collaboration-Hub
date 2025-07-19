@@ -21,5 +21,10 @@ public interface IAdminRepository
     
     Task<List<CodeSnippet>> GetAllSnippetsAsync(bool? isPublic = null);
 
-
+    public Task<List<CollabSession>> GetAllSessionsAsync(
+        string? search = null,
+        bool? isActive = null,
+        DateTime? createdFrom = null,
+        DateTime? createdTo = null,
+        int? minParticipants = null);
 }
