@@ -85,4 +85,17 @@ public class AdminRepository : IAdminRepository
         return true;
         
     }
+
+    public async Task<List<CodeSnippet>> GetAllSnippetsAsync(bool? isPublic = null)
+    {
+        var query = _db.CodeSnippets.AsQueryable();
+
+        if (isPublic.HasValue)
+            query = query.Where(s => s.IsPublic == isPublic.Value);
+
+        return await query
+            .Include(s => s.Owner)
+            .OrderByDescending(s => s.CreatedAt)
+            .ToListAsync();
+    }
 }

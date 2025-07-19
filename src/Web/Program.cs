@@ -455,6 +455,22 @@ app.MapDelete("/api/admin/user/{userId}", async (Guid userId, IMediator mediator
     return result ? Results.Ok() : Results.NotFound();
 }).RequireAuthorization();
 
+// Get all snippets
+
+app.MapGet("/api/admin/snippets", async (
+    [FromQuery] bool? isPublic,
+    IMediator mediator,
+    HttpContext httpContext
+) =>
+{
+    var isAdmin = httpContext.User.Claims.Any(c => c.Type == "isAdmin" && c.Value == "True");
+    if (!isAdmin)
+        return Results.Forbid();
+
+    var result = await mediator.Send(new GetAllSnippetsQuery(isPublic));
+    return Results.Ok(result);
+}).RequireAuthorization();
+
 
 
 

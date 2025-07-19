@@ -32,7 +32,7 @@ else
                     <h3 style="margin: 0;">Users List</h3>
                     <button class="btn btn-primary" style="height: 2.2rem;" @onclick="ShowFindUserModal">Find User</button>
                 </div>
-                
+
                 @if (users == null)
                 {
                     <span>Loading users...</span>
@@ -45,23 +45,23 @@ else
                 {
                     <table class="table">
                         <thead>
-                            <tr>
-                                <th @onclick="@(() => SortBy("id"))" style="cursor:pointer;">
-                                    ID @SortIcon("id")
-                                </th>
-                                <th @onclick="@(() => SortBy("username"))" style="cursor:pointer;">
-                                    Username @SortIcon("username")
-                                </th>
-                                <th @onclick="@(() => SortBy("email"))" style="cursor:pointer;">
-                                    Email @SortIcon("email")
-                                </th>
-                                <th @onclick="@(() => SortBy("createdat"))" style="cursor:pointer;">
-                                    Created At @SortIcon("createdat")
-                                </th>
-                                <th @onclick="@(() => SortBy("isadmin"))" style="cursor:pointer;">
-                                    IsAdmin @SortIcon("isadmin")
-                                </th>
-                            </tr>
+                        <tr>
+                            <th @onclick="@(() => SortBy("id"))" style="cursor:pointer;">
+                                ID @SortIcon("id")
+                            </th>
+                            <th @onclick="@(() => SortBy("username"))" style="cursor:pointer;">
+                                Username @SortIcon("username")
+                            </th>
+                            <th @onclick="@(() => SortBy("email"))" style="cursor:pointer;">
+                                Email @SortIcon("email")
+                            </th>
+                            <th @onclick="@(() => SortBy("createdat"))" style="cursor:pointer;">
+                                Created At @SortIcon("createdat")
+                            </th>
+                            <th @onclick="@(() => SortBy("isadmin"))" style="cursor:pointer;">
+                                IsAdmin @SortIcon("isadmin")
+                            </th>
+                        </tr>
                         </thead>
                         <tbody>
                         @foreach (var u in users)
@@ -80,7 +80,53 @@ else
             }
             else if (activeTab == "snippets")
             {
-                <p>Snippets management here...</p>
+                <div>
+                    <h3>Snippets Management</h3>
+                    <div style="margin-bottom: 1rem;">
+                        <span>Filter: </span>
+                        <button class="btn btn-secondary btn-sm" @onclick="@(() => SetSnippetsFilter(null))">All</button>
+                        <button class="btn btn-success btn-sm" @onclick="@(() => SetSnippetsFilter(true))">Public</button>
+                        <button class="btn btn-warning btn-sm" @onclick="@(() => SetSnippetsFilter(false))">Private</button>
+                    </div>
+                    @if (snippetsLoading)
+                    {
+                        <div>Loading snippets...</div>
+                    }
+                    else if (snippets == null || snippets.Count == 0)
+                    {
+                        <div>No snippets found.</div>
+                    }
+                    else
+                    {
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Owner</th>
+                                <th>Is Public</th>
+                                <th>Created At</th>
+                                <th>Updated At</th>
+                                <th>Content</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var s in snippets)
+                            {
+                                <tr>
+                                    <td>@s.Title</td>
+                                    <td>@s.OwnerName</td>
+                                    <td>@(s.IsPublic ? "Yes" : "No")</td>
+                                    <td>@s.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td>@(s.UpdatedAt.ToString("yyyy-MM-dd HH:mm") ?? "—")</td>
+                                    <td>
+                                        <pre style="max-width:350px; overflow-x:auto; background:#f8f9fa; border-radius:6px; padding:8px 10px;">@s.Content</pre>
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    }
+                </div>
             }
             else if (activeTab == "sessions")
             {
@@ -112,7 +158,6 @@ else
     </div>
 }
 
-
 @code {
     private string activeTab = "users";
     private bool isLoaded = false;
@@ -127,6 +172,10 @@ else
     private string findUserName = "";
     private string findUserError = "";
 
+    private List<SnippetDto>? snippets;
+    private bool? filterIsPublic = null;
+    private bool snippetsLoading = false;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!initialized)
@@ -137,6 +186,8 @@ else
             if (UserState.User?.IsAdmin == true)
             {
                 await LoadUsers();
+                if (activeTab == "snippets")
+                    await LoadSnippets();
             }
             StateHasChanged();
         }
@@ -147,6 +198,8 @@ else
         activeTab = tab;
         if (tab == "users")
             _ = LoadUsers();
+        else if (tab == "snippets")
+            _ = LoadSnippets();
     }
 
     private async Task SortBy(string field)
@@ -197,6 +250,36 @@ else
             users = new List<UserDto>();
         }
         StateHasChanged();
+    }
+
+    private async Task LoadSnippets()
+    {
+        snippetsLoading = true;
+        snippets = null;
+        StateHasChanged();
+        Http.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", UserState.Token);
+
+        var url = "/api/admin/snippets";
+        if (filterIsPublic.HasValue)
+            url += $"?isPublic={filterIsPublic.Value.ToString().ToLower()}";
+
+        try
+        {
+            snippets = await Http.GetFromJsonAsync<List<SnippetDto>>(url);
+        }
+        catch
+        {
+            snippets = new List<SnippetDto>();
+        }
+        snippetsLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task SetSnippetsFilter(bool? isPublic)
+    {
+        filterIsPublic = isPublic;
+        await LoadSnippets();
     }
 
     private void ShowFindUserModal()

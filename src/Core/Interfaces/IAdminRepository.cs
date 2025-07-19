@@ -18,6 +18,8 @@ public interface IAdminRepository
     public Task<bool> SetUserBlockedAsync(Guid userId, bool blocked, string? blockedByEmail);
 
     public Task<bool> DeleteUserAsync(Guid userId);
+    
+    Task<List<CodeSnippet>> GetAllSnippetsAsync(bool? isPublic = null);
 
 
 }
