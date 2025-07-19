@@ -161,6 +161,9 @@ namespace Infrastructure.Migrations
                     b.Property<string>("AvatarFileName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("BlockedByAdminEmail")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 

@@ -25,7 +25,14 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.SnippetContent, opt => opt.MapFrom(src => src.CodeSnippet.Content))
             .ForMember(dest => dest.EditHistories, opt => opt.MapFrom(src => src.EditHistories.OrderByDescending(h => h.EditedAt)))
             .ForMember(dest => dest.Participants, opt => opt.MapFrom(src => src.Participants));
-
+        CreateMap<User, UserDetailsDto>()
+            .ForMember(dest => dest.CollabSessions, opt => opt.MapFrom(src => src.CollabParticipants.Select(cp => cp.Session)))
+            .ForMember(dest => dest.CodeSnippets, opt => opt.MapFrom(src => src.CodeSnippets))
+            .ForMember(dest => dest.OwnedSessions, opt => opt.MapFrom(src => src.OwnedSessions));
+        CreateMap<CodeSnippet, SnippetDetailsDto>();
+        CreateMap<CollabSession, SessionDetailsDto>()
+            .ForMember(dest => dest.Owner, opt => opt.MapFrom(src => src.Owner.Username))
+            .ForMember(dest => dest.CodeSnippetTitle, opt => opt.MapFrom(src => src.CodeSnippet.Title));
     }
     
 }

@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Application.DTOs;
+using Application.Features.Admin.Commands;
 using Application.Features.Admin.Queries;
 using Application.Features.Auth.Commands;
 using Application.Features.Auth.Queries;
@@ -147,14 +148,18 @@ app.MapPost("/api/auth/register", async (HttpRequest req, IMediator mediator, IJ
 app.MapPost("/api/auth/login", async (
     [FromBody] LoginUserDto dto,
     IMediator mediator,
-    IJwtTokenService jwt) =>
+    IJwtTokenService jwt
+) =>
 {
     var qry = new LoginUserQuery { Dto = dto };
-    var user = await mediator.Send(qry);
-    if (user is null) 
-        return Results.Unauthorized();
-    var token = jwt.GenerateToken(user);
-    return Results.Ok(new { token, user });
+    var result = await mediator.Send(qry);
+
+    if (!result.Success)
+        return Results.BadRequest(new { error = result.Error });
+
+    var token = jwt.GenerateToken(result.User!);
+    result.Token = token;
+    return Results.Ok(result);
 });
 
 //USER SNIPPET
@@ -392,7 +397,7 @@ app.MapPut("/api/user/profile", async (
 
 // ADMIN
 
-
+// GET ALL USERS
 app.MapGet("/api/admin/users", async (
         [AsParameters] GetUsersQuery query, 
         IMediator mediator,
@@ -406,6 +411,49 @@ app.MapGet("/api/admin/users", async (
         var users = await mediator.Send(query);
         return Results.Ok(users);
     }) .RequireAuthorization();
+
+
+// GET USER BY USERNAME
+
+app.MapGet("/api/admin/user/{username}", async (
+    string username,
+    IMediator mediator,
+    HttpContext httpContext
+) =>
+{
+    var isAdmin = httpContext.User.Claims.Any(c => c.Type == "isAdmin" && c.Value == "True");
+    if (!isAdmin)
+        return Results.Forbid();
+
+    var userDetails = await mediator.Send(new GetUserDetailsQuery(username));
+    if (userDetails == null)
+        return Results.NotFound();
+
+    return Results.Ok(userDetails);
+}).RequireAuthorization();
+
+// Block/Unblock
+app.MapPost("/api/admin/user/block", async (BlockUserCommand cmd, IMediator mediator, HttpContext ctx) =>
+{
+    var isAdmin = ctx.User.Claims.Any(c => c.Type == "isAdmin" && c.Value == "True");
+    if (!isAdmin)
+        return Results.Forbid();
+
+    var adminEmail = ctx.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+    var result = await mediator.Send(cmd with { AdminEmail = adminEmail });
+    return result ? Results.Ok() : Results.NotFound();
+}).RequireAuthorization();
+
+// Delete
+app.MapDelete("/api/admin/user/{userId}", async (Guid userId, IMediator mediator, HttpContext ctx) =>
+{
+    var isAdmin = ctx.User.Claims.Any(c => c.Type == "isAdmin" && c.Value == "True");
+    if (!isAdmin)
+        return Results.Forbid();
+
+    var result = await mediator.Send(new DeleteUserCommand(userId));
+    return result ? Results.Ok() : Results.NotFound();
+}).RequireAuthorization();
 
 
 

@@ -49,4 +49,40 @@ public class AdminRepository : IAdminRepository
 
         return await query.ToListAsync();
     }
+
+    public async Task<User?> GetUserDetailsByUsernameAsync(string username)
+    {
+        return await _db.Users
+            .Include(u => u.CodeSnippets)
+            .Include(u => u.OwnedSessions)
+            .ThenInclude(s => s.CodeSnippet)
+            .Include(u => u.CollabParticipants)
+            .ThenInclude(cp => cp.Session)
+            .ThenInclude(s => s.CodeSnippet)
+            .FirstOrDefaultAsync(u => u.Username == username);
+    }
+
+    public async Task<bool> SetUserBlockedAsync(Guid userId, bool blocked, string? blockedByEmail)
+    {
+        
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null) throw new KeyNotFoundException();
+
+        user.IsBlocked = blocked;
+        user.BlockedByAdminEmail = blocked ? blockedByEmail : null;
+        await _db.SaveChangesAsync();
+        return true;
+        
+    }
+
+    public async Task<bool> DeleteUserAsync(Guid userId)
+    {
+        var user = await _db.Users.FindAsync(userId);
+        if (user == null)
+            return false;
+        _db.Users.Remove(user);
+        await _db.SaveChangesAsync();
+        return true;
+        
+    }
 }

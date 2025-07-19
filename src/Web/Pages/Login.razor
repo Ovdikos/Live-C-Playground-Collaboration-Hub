@@ -36,7 +36,8 @@
         var response = await Http.PostAsJsonAsync("/api/auth/login", login);
         if (!response.IsSuccessStatusCode)
         {
-            error = "Invalid credentials.";
+            var errorObj = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+            error = errorObj?["error"] ?? "Login failed.";
             return;
         }
         var result = await response.Content.ReadFromJsonAsync<AuthResult>();

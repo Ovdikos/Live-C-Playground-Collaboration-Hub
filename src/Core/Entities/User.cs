@@ -10,7 +10,11 @@ public class User
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public string? AvatarFileName { get; set; }
     public bool IsAdmin { get; set; }
-    public bool IsBlocked { get; set; } = false; // for admin
+    
+    
+    
+    public bool IsBlocked { get; set; } = false; 
+    public string? BlockedByAdminEmail { get; set; }
     
     
     public ICollection<CodeSnippet> CodeSnippets { get; set; } = new List<CodeSnippet>();

@@ -28,7 +28,11 @@ else
         <div class="admin-content">
             @if (activeTab == "users")
             {
-                <h3>Users List</h3>
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <h3 style="margin: 0;">Users List</h3>
+                    <button class="btn btn-primary" style="height: 2.2rem;" @onclick="ShowFindUserModal">Find User</button>
+                </div>
+                
                 @if (users == null)
                 {
                     <span>Loading users...</span>
@@ -90,6 +94,25 @@ else
     </div>
 }
 
+@if (showFindUserModal)
+{
+    <div class="modal-backdrop">
+        <div class="modal-dialog">
+            <h5 style="margin-bottom:12px;">Find User</h5>
+            <input class="form-control" @bind="findUserName" placeholder="Enter username..." autofocus  @onkeydown="OnFindUserKeyDown" />
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;">
+                <button class="btn btn-secondary" @onclick="CloseFindUserModal">Cancel</button>
+                <button class="btn btn-primary" @onclick="FindUser">Find</button>
+            </div>
+            @if (!string.IsNullOrEmpty(findUserError))
+            {
+                <div style="color:#d00;margin-top:10px;">@findUserError</div>
+            }
+        </div>
+    </div>
+}
+
+
 @code {
     private string activeTab = "users";
     private bool isLoaded = false;
@@ -99,6 +122,10 @@ else
 
     private string? orderBy = null;
     private bool desc = false;
+
+    private bool showFindUserModal = false;
+    private string findUserName = "";
+    private string findUserError = "";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -120,7 +147,6 @@ else
         activeTab = tab;
         if (tab == "users")
             _ = LoadUsers();
-        // TODO: same for snippets and sessions
     }
 
     private async Task SortBy(string field)
@@ -171,5 +197,39 @@ else
             users = new List<UserDto>();
         }
         StateHasChanged();
+    }
+
+    private void ShowFindUserModal()
+    {
+        findUserName = "";
+        findUserError = "";
+        showFindUserModal = true;
+    }
+
+    private void CloseFindUserModal()
+    {
+        showFindUserModal = false;
+        findUserError = "";
+        findUserName = "";
+    }
+
+    private async Task FindUser()
+    {
+        findUserError = "";
+        if (string.IsNullOrWhiteSpace(findUserName))
+        {
+            findUserError = "Enter username!";
+            return;
+        }
+        Nav.NavigateTo($"/admin/user/{findUserName.Trim()}");
+        showFindUserModal = false;
+    }
+
+    private void OnFindUserKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            _ = FindUser();
+        else if (e.Key == "Escape")
+            CloseFindUserModal();
     }
 }
