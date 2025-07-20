@@ -516,6 +516,24 @@ app.MapPut("/api/admin/snippet", async (
 }).RequireAuthorization();
 
 
+// Deleting snippet
+app.MapDelete("/api/admin/snippet/{id}", async (
+    Guid id,
+    IMediator mediator,
+    HttpContext httpContext
+) =>
+{
+    var isAdmin = httpContext.User.Claims.Any(c => c.Type == "isAdmin" && c.Value == "True");
+    if (!isAdmin) return Results.Forbid();
+
+    var deleted = await mediator.Send(new DeleteSnippetCommand(id));
+    if (!deleted) return Results.NotFound();
+
+    return Results.Ok();
+}).RequireAuthorization();
+
+
+
 
 
 // app.MapRazorComponents<App>()

@@ -142,4 +142,15 @@ public class AdminRepository : IAdminRepository
         var changes = await _db.SaveChangesAsync();
         return changes > 0;
     }
+
+    public async Task<bool> DeleteSnippetAsync(Guid snippetId)
+    {
+        var snippet = await _db.CodeSnippets.FindAsync(snippetId);
+        if (snippet == null)
+            return false;
+
+        _db.CodeSnippets.Remove(snippet);
+        await _db.SaveChangesAsync();
+        return true;
+    }
 }

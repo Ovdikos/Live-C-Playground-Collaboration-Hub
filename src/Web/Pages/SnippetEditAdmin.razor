@@ -47,6 +47,7 @@ else if (snippet != null)
             <input value="@snippet.OwnerName" class="form-control" disabled />
         </div>
         <button class="btn btn-success" type="submit" disabled="@isSaving">Save</button>
+        <button class="btn btn-danger ms-3" type="button" @onclick="ShowDeleteConfirm" disabled="@isSaving">Delete</button>
         @if (saved)
         {
             <span class="text-success ms-3">Saved!</span>
@@ -58,6 +59,20 @@ else if (snippet != null)
     </EditForm>
 }
 
+@if (showDeleteConfirm)
+{
+    <div class="modal-backdrop" style="z-index:2000;">
+        <div class="modal-dialog">
+            <h5>Delete this snippet?</h5>
+            <div style="margin-bottom:10px;">Are you sure you want to delete "<b>@snippet?.Title</b>"?</div>
+            <div style="display:flex;justify-content:flex-end;gap:12px;">
+                <button class="btn btn-secondary" @onclick="CancelDelete" disabled="@isSaving">Cancel</button>
+                <button class="btn btn-danger" @onclick="DeleteSnippet" disabled="@isSaving">Delete</button>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     [Parameter] public string Title { get; set; } = "";
 
@@ -67,6 +82,7 @@ else if (snippet != null)
     private string? error;
     private bool isSaving = false;
     private bool saved = false;
+    private bool showDeleteConfirm = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -113,5 +129,42 @@ else if (snippet != null)
             error = "Failed to save snippet.";
         }
         isSaving = false;
+    }
+
+    private void ShowDeleteConfirm()
+    {
+        showDeleteConfirm = true;
+    }
+
+    private void CancelDelete()
+    {
+        showDeleteConfirm = false;
+    }
+
+    private async Task DeleteSnippet()
+    {
+        if (snippet == null) return;
+        isSaving = true;
+        error = null;
+        try
+        {
+            var response = await Http.DeleteAsync($"/api/admin/snippet/{snippet.Id}");
+            if (response.IsSuccessStatusCode)
+            {
+                Nav.NavigateTo("/admin?tab=snippets", true);
+            }
+            else
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                error = $"Failed to delete snippet. Server: {content}";
+
+            }
+        }
+        catch
+        {
+            error = "Failed to delete snippet.";
+        }
+        isSaving = false;
+        showDeleteConfirm = false;
     }
 }

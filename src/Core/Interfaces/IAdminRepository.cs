@@ -31,4 +31,6 @@ public interface IAdminRepository
     Task<CodeSnippet?> GetSnippetByTitleAsync(string title);
 
     Task<bool> UpdateSnippetAsync(CodeSnippet snippet);
+    
+    Task<bool> DeleteSnippetAsync(Guid snippetId);
 }
