@@ -128,4 +128,18 @@ public class AdminRepository : IAdminRepository
 
         return await query.ToListAsync();
     }
+
+    public async Task<CodeSnippet?> GetSnippetByTitleAsync(string title)
+    {
+        return await _db.CodeSnippets
+            .Include(s => s.Owner)
+            .FirstOrDefaultAsync(s => s.Title == title);
+    }
+
+    public async Task<bool> UpdateSnippetAsync(CodeSnippet snippet)
+    {
+        _db.CodeSnippets.Update(snippet);
+        var changes = await _db.SaveChangesAsync();
+        return changes > 0;
+    }
 }

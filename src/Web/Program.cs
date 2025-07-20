@@ -491,6 +491,29 @@ app.MapGet("/api/admin/sessions", async (
     return Results.Ok(sessions);
 }).RequireAuthorization();
 
+// Find snippet by title
+app.MapGet("/api/admin/snippet", async (
+    [FromQuery] string title,
+    IMediator mediator,
+    HttpContext httpContext
+) => {
+    var snippet = await mediator.Send(new GetSnippetByTitleQuery(title));
+    if (snippet == null)
+        return Results.NotFound();
+    return Results.Ok(snippet);
+}).RequireAuthorization();
+
+// Snippet Update
+app.MapPut("/api/admin/snippet", async (
+    SnippetDto snippet,
+    IMediator mediator,
+    HttpContext httpContext
+) => {
+    var result = await mediator.Send(new UpdateSnippetCommand(snippet));
+    if (!result)
+        return Results.BadRequest();
+    return Results.Ok();
+}).RequireAuthorization();
 
 
 

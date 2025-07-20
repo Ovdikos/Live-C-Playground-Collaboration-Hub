@@ -10,6 +10,8 @@ public class MappingProfile : Profile
     public MappingProfile()
     {
         CreateMap<CodeSnippet, SnippetDto>();
+        CreateMap<SnippetDto, CodeSnippet>() 
+            .ForMember(dest => dest.Owner, opt => opt.Ignore());
         CreateMap<User, UserDto>();
         CreateMap<CodeSnippet, SnippetDto>()
             .ForMember(dest => dest.OwnerName, opt => 

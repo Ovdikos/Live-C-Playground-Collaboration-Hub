@@ -1,0 +1,117 @@
+﻿@page "/admin/snippet/{Title}"
+@inject HttpClient Http
+@inject UserState UserState
+@inject NavigationManager Nav
+
+@using System.Net.Http.Json
+@using Application.DTOs
+
+<h3>Edit Snippet</h3>
+
+@if (isLoading)
+{
+    <div>Loading...</div>
+}
+else if (notFound)
+{
+    <div class="alert alert-warning">Snippet not found.</div>
+}
+else if (snippet != null)
+{
+    <EditForm Model="snippet" OnValidSubmit="Save">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label class="form-label">Title:</label>
+            <InputText @bind-Value="snippet.Title" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Content:</label>
+            <InputTextArea @bind-Value="snippet.Content" class="form-control" rows="6" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Is Public:</label>
+            <InputCheckbox @bind-Value="snippet.IsPublic" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Created At:</label>
+            <input value="@(snippet.CreatedAt.ToString("yyyy-MM-dd HH:mm"))" class="form-control" disabled />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Updated At:</label>
+            <input value="@(snippet.UpdatedAt.ToString("yyyy-MM-dd HH:mm") ?? "—")" class="form-control" disabled />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Owner:</label>
+            <input value="@snippet.OwnerName" class="form-control" disabled />
+        </div>
+        <button class="btn btn-success" type="submit" disabled="@isSaving">Save</button>
+        @if (saved)
+        {
+            <span class="text-success ms-3">Saved!</span>
+        }
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <div class="alert alert-danger mt-2">@error</div>
+        }
+    </EditForm>
+}
+
+@code {
+    [Parameter] public string Title { get; set; } = "";
+
+    private SnippetDto? snippet;
+    private bool isLoading = true;
+    private bool notFound = false;
+    private string? error;
+    private bool isSaving = false;
+    private bool saved = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!UserState.IsAuthenticated || UserState.User?.IsAdmin != true)
+        {
+            Nav.NavigateTo("/");
+            return;
+        }
+
+        Http.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", UserState.Token);
+
+        try
+        {
+            snippet = await Http.GetFromJsonAsync<SnippetDto>($"/api/admin/snippet?title={Uri.EscapeDataString(Title)}");
+            notFound = snippet == null;
+        }
+        catch
+        {
+            notFound = true;
+        }
+        isLoading = false;
+    }
+
+    private async Task Save()
+    {
+        error = null;
+        saved = false;
+        isSaving = true;
+        try
+        {
+            var response = await Http.PutAsJsonAsync("/api/admin/snippet", snippet);
+            if (response.IsSuccessStatusCode)
+            {
+                saved = true;
+            }
+            else
+            {
+                error = "Failed to save snippet.";
+            }
+        }
+        catch
+        {
+            error = "Failed to save snippet.";
+        }
+        isSaving = false;
+    }
+}

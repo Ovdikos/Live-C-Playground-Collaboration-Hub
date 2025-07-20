@@ -27,4 +27,8 @@ public interface IAdminRepository
         DateTime? createdFrom = null,
         DateTime? createdTo = null,
         int? minParticipants = null);
+    
+    Task<CodeSnippet?> GetSnippetByTitleAsync(string title);
+
+    Task<bool> UpdateSnippetAsync(CodeSnippet snippet);
 }

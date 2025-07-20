@@ -70,7 +70,10 @@ else
             else if (activeTab == "snippets")
             {
                 <div>
-                    <h3>Snippets Management</h3>
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                        <h3 style="margin: 0;">Snippets Management</h3>
+                        <button class="btn btn-primary" style="height: 2.2rem;" @onclick="ShowFindSnippetModal">Find Snippet</button>
+                    </div>
                     <div style="margin-bottom: 1rem;">
                         <span>Filter: </span>
                         <button class="btn btn-secondary btn-sm" @onclick="@(() => SetSnippetsFilter(null))">All</button>
@@ -208,6 +211,24 @@ else
     </div>
 }
 
+@if (showFindSnippetModal)
+{
+    <div class="modal-backdrop">
+        <div class="modal-dialog">
+            <h5 style="margin-bottom:12px;">Find Snippet</h5>
+            <input class="form-control" @bind="findSnippetTitle" placeholder="Enter snippet title..." autofocus @onkeydown="OnFindSnippetKeyDown" />
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;">
+                <button class="btn btn-secondary" @onclick="CloseFindSnippetModal">Cancel</button>
+                <button class="btn btn-primary" @onclick="FindSnippet">Find</button>
+            </div>
+            @if (!string.IsNullOrEmpty(findSnippetError))
+            {
+                <div style="color:#d00;margin-top:10px;">@findSnippetError</div>
+            }
+        </div>
+    </div>
+}
+
 @code {
     private string activeTab = "users";
     private bool isLoaded = false;
@@ -222,6 +243,11 @@ else
     private bool showFindUserModal = false;
     private string findUserName = "";
     private string findUserError = "";
+
+    // FIND SNIPPET
+    private bool showFindSnippetModal = false;
+    private string findSnippetTitle = "";
+    private string findSnippetError = "";
 
     // SNIPPETS
     private List<SnippetDto>? snippets;
@@ -402,5 +428,40 @@ else
             _ = FindUser();
         else if (e.Key == "Escape")
             CloseFindUserModal();
+    }
+
+    // FIND SNIPPET
+    private void ShowFindSnippetModal()
+    {
+        findSnippetTitle = "";
+        findSnippetError = "";
+        showFindSnippetModal = true;
+    }
+
+    private void CloseFindSnippetModal()
+    {
+        showFindSnippetModal = false;
+        findSnippetError = "";
+        findSnippetTitle = "";
+    }
+
+    private async Task FindSnippet()
+    {
+        findSnippetError = "";
+        if (string.IsNullOrWhiteSpace(findSnippetTitle))
+        {
+            findSnippetError = "Enter snippet title!";
+            return;
+        }
+        Nav.NavigateTo($"/admin/snippet/{findSnippetTitle.Trim()}");
+        showFindSnippetModal = false;
+    }
+
+    private void OnFindSnippetKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            _ = FindSnippet();
+        else if (e.Key == "Escape")
+            CloseFindSnippetModal();
     }
 }
