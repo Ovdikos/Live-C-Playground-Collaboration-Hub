@@ -1,0 +1,189 @@
+﻿@page "/admin/session/{Name}"
+@inject HttpClient Http
+@inject UserState UserState
+@inject NavigationManager Nav
+
+@using System.Net.Http.Json
+@using Application.DTOs
+
+<h3>Edit Session</h3>
+
+@if (isLoading)
+{
+    <div>Loading...</div>
+}
+else if (notFound)
+{
+    <div class="alert alert-warning">Session not found.</div>
+}
+else if (session != null)
+{
+    <EditForm Model="session" OnValidSubmit="Save">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label class="form-label">Name:</label>
+            <InputText @bind-Value="session.Name" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Expires At:</label>
+            <InputDate @bind-Value="session.ExpiresAt" class="form-control" />
+            <span class="form-text">(optional, if set, session auto-deletes)</span>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Is Active:</label>
+            <InputCheckbox @bind-Value="session.IsActive" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Owner:</label>
+            <input value="@session.OwnerName" class="form-control" disabled />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Created At:</label>
+            <input value="@session.CreatedAt.ToString("yyyy-MM-dd HH:mm")" class="form-control" disabled />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Snippet Title:</label>
+            <input value="@session.CodeSnippetTitle" class="form-control" disabled />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Join Code:</label>
+            <InputText @bind-Value="session.JoinCode" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Participants:</label>
+            <ul>
+                @if (session.Participants != null)
+                {
+                    @foreach (var p in session.Participants)
+                    {
+                        <li>@p.Username (@p.Email)</li>
+                    }
+                }
+                else
+                {
+                    <li>None</li>
+                }
+            </ul>
+        </div>
+        <button class="btn btn-success" type="submit" disabled="@isSaving">Save</button>
+        <button class="btn btn-danger ms-2" type="button" @onclick="ShowDeleteModal" disabled="@isSaving">Delete</button>
+        @if (saved)
+        {
+            <span class="text-success ms-3">Saved!</span>
+        }
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <div class="alert alert-danger mt-2">@error</div>
+        }
+    </EditForm>
+}
+
+@if (showDeleteModal)
+{
+    <div class="modal-backdrop">
+        <div class="modal-dialog">
+            <h5 style="margin-bottom:18px;">Delete session <span style="color:#b82c2c">@session?.Name</span>?</h5>
+            <p>Are you sure you want to delete this session? This action cannot be undone.</p>
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:24px;">
+                <button class="btn btn-secondary" @onclick="CloseDeleteModal" disabled="@isSaving">Cancel</button>
+                <button class="btn btn-danger" @onclick="DeleteSession" disabled="@isSaving">Delete</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string Name { get; set; } = "";
+
+    private CollabSessionDetailsDto? session;
+    private bool isLoading = true;
+    private bool notFound = false;
+    private string? error;
+    private bool isSaving = false;
+    private bool saved = false;
+    private bool showDeleteModal = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!UserState.IsAuthenticated || UserState.User?.IsAdmin != true)
+        {
+            Nav.NavigateTo("/");
+            return;
+        }
+
+        Http.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", UserState.Token);
+
+        try
+        {
+            session = await Http.GetFromJsonAsync<CollabSessionDetailsDto>($"/api/admin/session?name={Uri.EscapeDataString(Name)}");
+            notFound = session == null;
+        }
+        catch
+        {
+            notFound = true;
+        }
+        isLoading = false;
+    }
+
+    private async Task Save()
+    {
+        error = null;
+        saved = false;
+        isSaving = true;
+        try
+        {
+            var response = await Http.PutAsJsonAsync("/api/admin/session", session);
+            if (response.IsSuccessStatusCode)
+            {
+                saved = true;
+            }
+            else
+            {
+                error = "Failed to save session.";
+            }
+        }
+        catch
+        {
+            error = "Failed to save session.";
+        }
+        isSaving = false;
+    }
+
+    private void ShowDeleteModal()
+    {
+        showDeleteModal = true;
+    }
+
+    private void CloseDeleteModal()
+    {
+        showDeleteModal = false;
+    }
+
+    private async Task DeleteSession()
+    {
+        error = null;
+        isSaving = true;
+        try
+        {
+            var response = await Http.DeleteAsync($"/api/admin/session/{Uri.EscapeDataString(Name)}");
+            if (response.IsSuccessStatusCode)
+            {
+                Nav.NavigateTo("/admin?sessions");
+            }
+            else
+            {
+                var msg = await response.Content.ReadAsStringAsync();
+                error = "Failed to delete session. Server: " + msg;
+            }
+        }
+        catch (Exception ex)
+        {
+            error = "Failed to delete session. " + ex.Message;
+        }
+        isSaving = false;
+        showDeleteModal = false;
+    }
+}

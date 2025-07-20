@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Application.DTOs;
+using Application.Features.Admin.CleanupService;
 using Application.Features.Admin.Commands;
 using Application.Features.Admin.Queries;
 using Application.Features.Auth.Commands;
@@ -69,6 +70,9 @@ builder.Services.AddAutoMapper(cfg =>
 // MediatR
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblyContaining<GetAllCodeSnippetsQuery>());
+
+// Hosted Service
+builder.Services.AddHostedService<SessionCleanupService>();
 
 
 
@@ -527,6 +531,47 @@ app.MapDelete("/api/admin/snippet/{id}", async (
     if (!isAdmin) return Results.Forbid();
 
     var deleted = await mediator.Send(new DeleteSnippetCommand(id));
+    if (!deleted) return Results.NotFound();
+
+    return Results.Ok();
+}).RequireAuthorization();
+
+// GET session by id (for edit)
+app.MapGet("/api/admin/session", async (
+    [FromQuery] string name,
+    IMediator mediator,
+    HttpContext httpContext
+) =>
+{
+    var isAdmin = httpContext.User.Claims.Any(c => c.Type == "isAdmin" && c.Value == "True");
+    if (!isAdmin) return Results.Forbid();
+
+    var session = await mediator.Send(new GetCollabSessionDetailsQuery(name));
+    if (session == null) return Results.NotFound();
+
+    return Results.Ok(session);
+}).RequireAuthorization();
+
+// PUT update session
+app.MapPut("/api/admin/session", async (
+    CollabSessionEditDto dto, IMediator mediator, HttpContext ctx
+) => {
+    if (!ctx.User.Claims.Any(c => c.Type == "isAdmin" && c.Value == "True")) return Results.Forbid();
+    var updated = await mediator.Send(new UpdateCollabSessionCommand(dto));
+    return updated ? Results.Ok() : Results.BadRequest();
+}).RequireAuthorization();
+
+// DELETE session
+app.MapDelete("/api/admin/session/{name}", async (
+    string name,
+    IMediator mediator,
+    HttpContext httpContext
+) =>
+{
+    var isAdmin = httpContext.User.Claims.Any(c => c.Type == "isAdmin" && c.Value == "True");
+    if (!isAdmin) return Results.Forbid();
+
+    var deleted = await mediator.Send(new DeleteCollabSessionCommand(name));
     if (!deleted) return Results.NotFound();
 
     return Results.Ok();

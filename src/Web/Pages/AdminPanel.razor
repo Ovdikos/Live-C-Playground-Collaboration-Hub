@@ -123,7 +123,10 @@ else
             else if (activeTab == "sessions")
             {
                 <div>
-                    <h3>Sessions Management</h3>
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                        <h3 style="margin: 0;">Sessions Management</h3>
+                        <button class="btn btn-primary" style="height: 2.2rem;" @onclick="ShowFindSessionModal">Find Session</button>
+                    </div>
                     <div style="margin-bottom: 1rem;">
                         <input class="form-control" style="width:180px;display:inline;margin-right:8px;"
                                @bind="sessionSearch" placeholder="Search..." />
@@ -193,6 +196,7 @@ else
     </div>
 }
 
+@* FIND MODALS *@
 @if (showFindUserModal)
 {
     <div class="modal-backdrop">
@@ -210,7 +214,6 @@ else
         </div>
     </div>
 }
-
 @if (showFindSnippetModal)
 {
     <div class="modal-backdrop">
@@ -228,6 +231,23 @@ else
         </div>
     </div>
 }
+@if (showFindSessionModal)
+{
+    <div class="modal-backdrop">
+        <div class="modal-dialog">
+            <h5 style="margin-bottom:12px;">Find Session</h5>
+            <input class="form-control" @bind="findSessionName" placeholder="Enter session name..." autofocus @onkeydown="OnFindSessionKeyDown" />
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;">
+                <button class="btn btn-secondary" @onclick="CloseFindSessionModal">Cancel</button>
+                <button class="btn btn-primary" @onclick="FindSession">Find</button>
+            </div>
+            @if (!string.IsNullOrEmpty(findSessionError))
+            {
+                <div style="color:#d00;margin-top:10px;">@findSessionError</div>
+            }
+        </div>
+    </div>
+}
 
 @code {
     private string activeTab = "users";
@@ -235,19 +255,21 @@ else
     private bool initialized = false;
 
     private List<UserDto>? users;
-
     private string? orderBy = null;
     private bool desc = false;
 
-    //FIND USER
+    // FIND MODALS
     private bool showFindUserModal = false;
     private string findUserName = "";
     private string findUserError = "";
 
-    // FIND SNIPPET
     private bool showFindSnippetModal = false;
     private string findSnippetTitle = "";
     private string findSnippetError = "";
+
+    private bool showFindSessionModal = false;
+    private string findSessionName = "";
+    private string findSessionError = "";
 
     // SNIPPETS
     private List<SnippetDto>? snippets;
@@ -396,6 +418,7 @@ else
         StateHasChanged();
     }
 
+    // USER FIND MODAL
     private void ShowFindUserModal()
     {
         findUserName = "";
@@ -430,7 +453,7 @@ else
             CloseFindUserModal();
     }
 
-    // FIND SNIPPET
+    // SNIPPET FIND MODAL
     private void ShowFindSnippetModal()
     {
         findSnippetTitle = "";
@@ -463,5 +486,40 @@ else
             _ = FindSnippet();
         else if (e.Key == "Escape")
             CloseFindSnippetModal();
+    }
+
+    // SESSION FIND MODAL
+    private void ShowFindSessionModal()
+    {
+        findSessionName = "";
+        findSessionError = "";
+        showFindSessionModal = true;
+    }
+
+    private void CloseFindSessionModal()
+    {
+        showFindSessionModal = false;
+        findSessionError = "";
+        findSessionName = "";
+    }
+
+    private async Task FindSession()
+    {
+        findSessionError = "";
+        if (string.IsNullOrWhiteSpace(findSessionName))
+        {
+            findSessionError = "Enter session name!";
+            return;
+        }
+        Nav.NavigateTo($"/admin/session/{findSessionName.Trim()}");
+        showFindSessionModal = false;
+    }
+
+    private void OnFindSessionKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            _ = FindSession();
+        else if (e.Key == "Escape")
+            CloseFindSessionModal();
     }
 }

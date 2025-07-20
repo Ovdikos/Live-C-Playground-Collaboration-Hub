@@ -1,0 +1,358 @@
+body {
+    background: #f8f9fa;
+    height: 100%;
+}
+
+.card {
+    border-radius: 1rem;
+    box-shadow: 0 0.15rem 0.5rem rgba(0,0,0,.04);
+}
+.navbar-brand {
+    font-size: 1.2rem;
+    letter-spacing: 0.5px;
+}
+.btn-primary, .btn-success {
+    border-radius: 0.7rem;
+    font-weight: 500;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+}
+input.form-control, textarea.form-control {
+    border-radius: 0.7rem;
+}
+.alert, .card, .list-group-item {
+    border-radius: 1rem !important;
+}
+pre {
+    background: #f5f5f5;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+}
+.modal-backdrop, .overlay {
+    pointer-events: auto !important;
+}
+
+.main-full {
+    width: 100vw;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background: #f8f9fa; 
+    height: 100%;
+}
+
+.profile-container {
+    max-width: 420px;
+    margin: 48px auto;
+    padding: 2.5rem 2.3rem 2rem 2.3rem;
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 1.8rem;
+    box-shadow: 0 8px 40px 0 rgba(34, 41, 47, 0.18);
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+    align-items: center;
+}
+.profile-title {
+    font-size: 2.1rem;
+    font-weight: 800;
+    margin-bottom: 0.8rem;
+    letter-spacing: 0.01em;
+    color: #222;
+}
+.profile-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+}
+.profile-label {
+    font-weight: 500;
+    margin-bottom: 0.15rem;
+    color: #222;
+}
+.profile-input, .profile-input:focus {
+    border: 1.5px solid #caf0f8;
+    border-radius: 0.55rem;
+    outline: none;
+    padding: 0.56rem 1.1rem;
+    font-size: 1.1rem;
+    background: #f6fbff;
+    transition: border 0.15s;
+}
+.profile-input:focus {
+    border: 2px solid #4895ef;
+    background: #e7f5ff;
+}
+.profile-avatar-preview {
+    width: 82px;
+    height: 82px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 2px 16px rgba(44, 54, 99, 0.10);
+    border: 2.5px solid #48cae4;
+    margin-bottom: 0.5rem;
+}
+.profile-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.profile-actions {
+    display: flex;
+    gap: 7.2rem;
+    justify-content: flex-end;
+    margin-top: 1.1rem;
+}
+.profile-btn {
+    background: linear-gradient(95deg, #0077b6 70%, #00b4d8 100%);
+    color: #fff;
+    border: none;
+    padding: 0.65rem 2.2rem;
+    border-radius: 0.9rem;
+    font-size: 1.08rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    transition: background 0.18s;
+    cursor: pointer;
+}
+.profile-btn:active {
+    background: linear-gradient(90deg, #0096c7 65%, #48cae4 100%);
+}
+.profile-password-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.profile-show-btn {
+    border: none;
+    background: #f0f4fa;
+    color: #225;
+    border-radius: 0.7rem;
+    padding: 0.3rem 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.12s;
+}
+.profile-show-btn:active { background: #caf0f8; }
+
+
+.userbar-container {
+    position: fixed;
+    top: 24px;
+    right: 40px;
+    z-index: 1001;
+    background: rgba(0,255,224,0.76);
+    box-shadow: 0 4px 32px rgba(0,0,0,0.07);
+    border-radius: 2rem;
+    padding: 0.5rem 1.3rem 0.5rem 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+    min-width: 230px;
+}
+
+.profile-menu-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: linear-gradient(95deg, #e0f7fa 70%, #90caf9 100%);
+    color: #1976d2;
+    border: none;
+    padding: 0.65rem 1.6rem;
+    border-radius: 0.9rem;
+    font-size: 1.08rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    transition: background 0.18s, box-shadow 0.15s;
+    cursor: pointer;
+    box-shadow: 0 2px 12px rgba(44, 54, 99, 0.05);
+}
+.profile-menu-btn svg {
+    margin-right: 0.2rem;
+}
+.profile-menu-btn:active {
+    background: linear-gradient(90deg, #bbdefb 65%, #b2ebf2 100%);
+}
+
+.admin-panel-container {
+    max-width: 940px;
+    margin: 48px auto;
+    padding: 2rem 2.3rem 2.4rem 2.3rem;
+    background: #fff;
+    border-radius: 1.7rem;
+    box-shadow: 0 8px 38px 0 rgba(34, 41, 47, 0.17);
+    display: flex;
+    flex-direction: column;
+    gap: 1.7rem;
+    align-items: stretch;
+}
+.admin-title {
+    font-size: 2.2rem;
+    font-weight: 900;
+    margin-bottom: 0.7rem;
+    color: #1e355f;
+}
+.admin-tabs {
+    display: flex;
+    gap: 1.2rem;
+    margin-bottom: 1.1rem;
+}
+.admin-tab-btn {
+    padding: 0.6rem 2.1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 0.8rem;
+    border: none;
+    background: #e3f6fc;
+    color: #008bca;
+    cursor: pointer;
+    transition: background 0.15s, color 0.12s;
+}
+.admin-tab-btn.active,
+.admin-tab-btn:hover {
+    background: linear-gradient(93deg, #0077b6 70%, #00b4d8 100%);
+    color: #fff;
+}
+.admin-content {
+    min-height: 280px;
+    padding: 1.7rem 1rem 0.5rem 0.5rem;
+    background: #f9fcff;
+    border-radius: 1.1rem;
+    box-shadow: 0 2px 18px 0 rgba(48, 81, 138, 0.07);
+}
+
+/* Модальне вікно для Find User */
+.modal-backdrop {
+    position: fixed;
+    left: 0; top: 0;
+    width: 100vw; height: 100vh;
+    background: #0003;
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: all;
+}
+
+.modal-dialog {
+    z-index: 1200;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 16px #0005;
+    max-width: 350px;
+    padding: 24px;
+    min-width: 270px;
+    min-height: 120px;
+    position: relative;
+    pointer-events: auto;
+}
+
+@keyframes modalPop {
+    from { transform: translateY(60px) scale(0.96); opacity: 0; }
+    to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.modal-dialog h5 {
+    font-size: 1.23rem;
+    font-weight: 700;
+    color: #003366;
+    margin-bottom: 16px;
+}
+.modal-dialog input.form-control {
+    margin-bottom: 6px;
+    font-size: 1.08rem;
+}
+.modal-dialog .btn {
+    min-width: 84px;
+    font-size: 1.06rem;
+}
+
+/* User Details Page */
+.user-details-container {
+    max-width: 620px;
+    margin: 38px auto 0 auto;
+    padding: 2.2rem 2rem 1.6rem 2rem;
+    background: #fff;
+    border-radius: 1.3rem;
+    box-shadow: 0 8px 36px 0 rgba(60, 82, 120, 0.11);
+}
+.user-details-container h2 {
+    font-size: 1.67rem;
+    font-weight: 800;
+    margin-bottom: 0.7rem;
+    color: #1666a7;
+}
+.user-details-container p {
+    margin-bottom: 0.3rem;
+    font-size: 1.11rem;
+    color: #234;
+}
+.user-details-container h4 {
+    font-size: 1.14rem;
+    font-weight: 700;
+    margin: 1.05rem 0 0.3rem 0;
+    color: #18649b;
+}
+.user-details-container ul {
+    padding-left: 22px;
+    margin-bottom: 0.5rem;
+}
+.user-details-container li {
+    font-size: 1.04rem;
+    margin-bottom: 0.13rem;
+}
+
+.table th, .table td {
+    vertical-align: middle !important;
+}
+
+input.form-control:focus {
+    border: 2px solid #00b4d8;
+    background: #f1fafd;
+}
+.btn-primary:active, .btn:active {
+    background: #0077b6 !important;
+    color: #fff !important;
+}
+.btn-secondary:active {
+    background: #bbc1c6 !important;
+    color: #222 !important;
+}
+
+.hint-on-hover { position: relative; cursor: pointer; }
+.hint-on-hover .tooltip {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    top: 120%; left: 0;
+    background: #2e77b6;
+    color: #fff;
+    border-radius: 7px;
+    padding: 7px 15px;
+    z-index: 30;
+    white-space: pre;
+    transition: opacity 0.2s;
+}
+.hint-on-hover:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+.masked {
+    user-select: none;
+    letter-spacing: 2px;
+    color: #666;
+}
+
+
+
+
+
+
+
+
+
+

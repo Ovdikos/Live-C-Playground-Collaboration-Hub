@@ -42,6 +42,13 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.CodeSnippetContent, opt => opt.MapFrom(src => src.CodeSnippet.Content))
             .ForMember(dest => dest.Participants, opt => opt.MapFrom(src => src.Participants))
             .ForMember(dest => dest.EditHistories, opt => opt.MapFrom(src => src.EditHistories));
+        CreateMap<CollabSession, CollabSessionEditDto>()
+            .ForMember(dest => dest.OwnerName, opt => opt.MapFrom(src => src.Owner.Username))
+            .ForMember(dest => dest.CodeSnippetTitle, opt => opt.MapFrom(src => src.CodeSnippet.Title))
+            .ForMember(dest => dest.Participants, opt => opt.MapFrom(src => src.Participants.Select(p => p.User.Username)));
+        CreateMap<CollabSessionEditDto, CollabSession>()
+            .ForMember(dest => dest.Participants, opt => opt.Ignore());
+        CreateMap<CollabParticipantDto, CollabParticipant>();
     }
     
 }

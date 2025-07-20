@@ -33,4 +33,11 @@ public interface IAdminRepository
     Task<bool> UpdateSnippetAsync(CodeSnippet snippet);
     
     Task<bool> DeleteSnippetAsync(Guid snippetId);
+    
+    
+    Task<CollabSession?> GetByIdAsync(Guid id);
+    Task<CollabSession?> GetByNameAsync(string name);
+    Task<bool> UpdateAsync(CollabSession session);
+    Task<bool> DeleteSessionByNameAsync(string name);
+
 }

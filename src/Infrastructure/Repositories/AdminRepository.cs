@@ -153,4 +153,41 @@ public class AdminRepository : IAdminRepository
         await _db.SaveChangesAsync();
         return true;
     }
+
+    public async Task<CollabSession?> GetByIdAsync(Guid id)
+    {
+        return await _db.CollabSessions
+            .Include(s => s.Owner)
+            .Include(s => s.Participants).ThenInclude(p => p.User)
+            .FirstOrDefaultAsync(s => s.Id == id);
+    }
+
+    public async Task<CollabSession?> GetByNameAsync(string name)
+    {
+        return await _db.CollabSessions
+            .Include(s => s.Owner)
+            .Include(s => s.CodeSnippet)
+            .Include(s => s.Participants)
+            .ThenInclude(p => p.User)
+            .FirstOrDefaultAsync(s => s.Name == name);
+    }
+
+    public async Task<bool> UpdateAsync(CollabSession session)
+    {
+        _db.CollabSessions.Update(session);
+        return await _db.SaveChangesAsync() > 0;
+    }
+
+    public async Task<bool> DeleteSessionByNameAsync(string name)
+    {
+        var session = await _db.CollabSessions
+            .FirstOrDefaultAsync(s => s.Name == name);
+
+        if (session == null)
+            return false;
+
+        _db.CollabSessions.Remove(session);
+        await _db.SaveChangesAsync();
+        return true;
+    }
 }
