@@ -2,27 +2,28 @@
 @inject HttpClient Http
 @inject UserState UserState
 @inject NavigationManager NavigationManager
-@using Application.DTOs
+@using Application.DTOs.SessionDtos
+@using Web.AuthService
 
 <div class="container mt-5">
     <div class="d-flex gap-2 mb-3">
-        <a class="btn btn-primary" href="/sessions/create">Create New Session</a>
-        <button class="btn btn-success" @onclick="ShowJoinModal">Join Session</button>
+        <a class="btn btn-primary" href="/sessions/create">Create New SessionDtos</a>
+        <button class="btn btn-success" @onclick="ShowJoinModal">Join SessionDtos</button>
     </div>
 
-    <h3 class="fw-bold mb-3">Sessions I'm Participating In</h3>
-    @if (sessionsParticipating == null)
+    <h3 class="fw-bold mb-3">SessionDtoss I'm Participating In</h3>
+    @if (_sessionsParticipating == null)
     {
         <div>Loading...</div>
     }
-    else if (sessionsParticipating.Count == 0)
+    else if (_sessionsParticipating.Count == 0)
     {
         <div class="alert alert-info">You are not participating in any sessions.</div>
     }
     else
     {
         <ul class="list-group mb-5">
-            @foreach (var s in sessionsParticipating)
+            @foreach (var s in _sessionsParticipating)
             {
                 <li class="list-group-item d-flex flex-column align-items-start mb-2 rounded shadow-sm">
                     <div class="d-flex justify-content-between align-items-center w-100">
@@ -53,19 +54,19 @@
         </ul>
     }
 
-    <h3 class="fw-bold mb-3">Sessions I Own</h3>
-    @if (sessionsOwned == null)
+    <h3 class="fw-bold mb-3">SessionDtoss I Own</h3>
+    @if (_sessionsOwned == null)
     {
         <div>Loading...</div>
     }
-    else if (sessionsOwned.Count == 0)
+    else if (_sessionsOwned.Count == 0)
     {
         <div class="alert alert-info">You haven't created any sessions yet.</div>
     }
     else
     {
         <ul class="list-group">
-            @foreach (var s in sessionsOwned)
+            @foreach (var s in _sessionsOwned)
             {
                 <li class="list-group-item d-flex flex-column align-items-start mb-2 rounded shadow-sm">
                     <div class="d-flex justify-content-between align-items-center w-100">
@@ -85,21 +86,21 @@
     }
 </div>
 
-@if (showJoinModal)
+@if (_showJoinModal)
 {
-    <div class="modal-backdrop fade show"></div>
-    <div class="modal d-block" tabindex="-1">
+    <div class="modal-backdrop fade show" style="z-index:1050"></div>
+    <div class="modal d-block" tabindex="-1" style="z-index:1055">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Join Session</h5>
+                    <h5 class="modal-title">Join SessionDtos</h5>
                     <button type="button" class="btn-close" @onclick="HideJoinModal"></button>
                 </div>
                 <div class="modal-body">
-                    <InputText class="form-control" placeholder="Enter join code..." @bind-Value="joinCode" />
-                    @if (!string.IsNullOrEmpty(joinError))
+                    <InputText class="form-control" placeholder="Enter join code..." @bind-Value="_joinCode" />
+                    @if (!string.IsNullOrEmpty(_joinError))
                     {
-                        <div class="alert alert-danger mt-2">@joinError</div>
+                        <div class="alert alert-danger mt-2">@_joinError</div>
                     }
                 </div>
                 <div class="modal-footer">
@@ -111,10 +112,10 @@
     </div>
 }
 
-@if (showLeaveModal)
+@if (_showLeaveModal)
 {
-    <div class="modal-backdrop fade show"></div>
-    <div class="modal d-block" tabindex="-1">
+    <div class="modal-backdrop fade show" style="z-index:1050"></div>
+    <div class="modal d-block" tabindex="-1" style="z-index:1055">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -132,7 +133,7 @@
     </div>
 }
 
-@if (showDeleteModal)
+@if (_showDeleteModal)
 {
     <div class="modal-backdrop fade show"></div>
     <div class="modal d-block" tabindex="-1">
@@ -154,110 +155,110 @@
 }
 
 @code {
-    private List<CollabSessionDto>? sessionsParticipating;
-    private List<CollabSessionDto>? sessionsOwned;
+    private List<CollabSessionDto>? _sessionsParticipating;
+    private List<CollabSessionDto>? _sessionsOwned;
 
-    private bool showJoinModal = false;
-    private string joinCode = "";
-    private string? joinError = null;
+    private bool _showJoinModal = false;
+    private string _joinCode = "";
+    private string? _joinError = null;
 
-    private bool showLeaveModal = false;
-    private Guid sessionToLeave;
+    private bool _showLeaveModal = false;
+    private Guid _sessionToLeave;
 
-    private bool showDeleteModal = false;
-    private Guid sessionToDelete;
+    private bool _showDeleteModal = false;
+    public Guid _sessionToDelete;
     
-    private bool initialized = false;
-    private bool isLoaded = false;
+    private bool _initialized = false;
+    private bool _isLoaded = false;
 
     void ShowJoinModal()
     {
-        joinCode = "";
-        joinError = null;
-        showJoinModal = true;
+        _joinCode = "";
+        _joinError = null;
+        _showJoinModal = true;
     }
     void HideJoinModal()
     {
-        showJoinModal = false;
-        joinError = null;
+        _showJoinModal = false;
+        _joinError = null;
     }
 
     void ShowLeaveModal(Guid sessionId)
     {
-        sessionToLeave = sessionId;
-        showLeaveModal = true;
+        _sessionToLeave = sessionId;
+        _showLeaveModal = true;
     }
     void HideLeaveModal()
     {
-        sessionToLeave = Guid.Empty;
-        showLeaveModal = false;
+        _sessionToLeave = Guid.Empty;
+        _showLeaveModal = false;
     }
 
     void ShowDeleteModal(Guid sessionId)
     {
-        sessionToDelete = sessionId;
-        showDeleteModal = true;
+        _sessionToDelete = sessionId;
+        _showDeleteModal = true;
     }
     void HideDeleteModal()
     {
-        sessionToDelete = Guid.Empty;
-        showDeleteModal = false;
+        _sessionToDelete = Guid.Empty;
+        _showDeleteModal = false;
     }
 
     private async Task JoinSessionAsync()
     {
-        joinError = null;
-        if (string.IsNullOrWhiteSpace(joinCode))
+        _joinError = null;
+        if (string.IsNullOrWhiteSpace(_joinCode))
         {
-            joinError = "Code is required.";
+            _joinError = "Code is required.";
             return;
         }
 
         var response = await Http.PostAsJsonAsync("/api/sessions/join", new JoinSessionDto
         {
-            JoinCode = joinCode,
+            JoinCode = _joinCode,
             UserId = UserState.User!.Id
         });
 
         if (response.IsSuccessStatusCode)
         {
-            showJoinModal = false;
+            _showJoinModal = false;
             await ReloadSessions();
         }
         else
         {
-            joinError = "Failed to join session. Invalid code or already joined.";
+            _joinError = "Failed to join session. Invalid code or already joined.";
         }
     }
 
     private async Task LeaveSessionAsync()
     {
-        if (sessionToLeave == Guid.Empty || UserState.User == null)
+        if (_sessionToLeave == Guid.Empty || UserState.User == null)
             return;
 
         var response = await Http.PostAsJsonAsync("/api/sessions/leave", new LeaveSessionDto
         {
-            SessionId = sessionToLeave,
+            SessionId = _sessionToLeave,
             UserId = UserState.User.Id
         });
 
         if (response.IsSuccessStatusCode)
         {
-            showLeaveModal = false;
+            _showLeaveModal = false;
             await ReloadSessions();
         }
     }
 
     private async Task DeleteSessionAsync()
     {
-        if (sessionToDelete == Guid.Empty || UserState.User == null)
+        if (_sessionToDelete == Guid.Empty || UserState.User == null)
             return;
 
-        var response = await Http.DeleteAsync($"/api/sessions/{sessionToDelete}?userId={UserState.User.Id}");
+        var response = await Http.DeleteAsync($"/api/sessions/{_sessionToDelete}?userId={UserState.User.Id}");
 
         if (response.IsSuccessStatusCode)
         {
-            showDeleteModal = false;
+            _showDeleteModal = false;
             await ReloadSessions();
         }
         
@@ -265,30 +266,30 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!initialized)
+        if (!_initialized)
         {
-            initialized = true;
+            _initialized = true;
             await UserState.InitializeAsync();
             
             await ReloadSessions();
 
-            isLoaded = true;
+            _isLoaded = true;
             StateHasChanged();
         }
     }
 
     private async Task ReloadSessions()
     {
-        sessionsParticipating = null;
-        sessionsOwned = null;
+        _sessionsParticipating = null;
+        _sessionsOwned = null;
 
         if (!UserState.IsAuthenticated || UserState.User is null)
             return;
 
         var userId = UserState.User.Id.ToString();
 
-        sessionsParticipating = await Http.GetFromJsonAsync<List<CollabSessionDto>>($"/api/sessions/participating?userId={userId}");
-        sessionsOwned = await Http.GetFromJsonAsync<List<CollabSessionDto>>($"/api/sessions/owned?userId={userId}");
+        _sessionsParticipating = await Http.GetFromJsonAsync<List<CollabSessionDto>>($"/api/sessions/participating?userId={userId}");
+        _sessionsOwned = await Http.GetFromJsonAsync<List<CollabSessionDto>>($"/api/sessions/owned?userId={userId}");
         StateHasChanged();
     }
 

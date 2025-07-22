@@ -1,31 +1,34 @@
 @page "/register"
+@using Application.DTOs.LoginRegisterDtos
+@using Application.DTOs.UserDtos
+@using Web.AuthService
 @inject HttpClient Http
 @inject NavigationManager Nav
 @inject UserState UserState
-@inject IJSRuntime JS
+@inject IJSRuntime Js
 
-<EditForm Model="register" OnValidSubmit="HandleRegister" FormName="registerForm">
+<EditForm Model="_register" OnValidSubmit="HandleRegister" FormName="registerForm">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
     <div class="mb-3">
-        <label for="username">Username</label>
-        <InputText id="username" class="form-control" @bind-Value="register.Username" />
+        <label for="username">Login</label>
+        <InputText id="username" class="form-control" @bind-Value="_register.Username" />
     </div>
     <div class="mb-3">
         <label for="password">Password</label>
-        <InputText id="password" type="password" class="form-control" @bind-Value="register.Password" />
+        <InputText id="password" type="password" class="form-control" @bind-Value="_register.Password" />
     </div>
     <div class="mb-3">
         <label for="email">Email</label>
-        <InputText id="email" type="email" class="form-control" @bind-Value="register.Email" />
+        <InputText id="email" type="email" class="form-control" @bind-Value="_register.Email" />
     </div>
     <div class="mb-3">
         <label>Avatar (optional)</label>
-        <InputFile @ref="fileInputRef" OnChange="OnInputFileChange" accept="image/png, image/jpeg" />
-        @if (!string.IsNullOrEmpty(avatarPreview))
+        <InputFile @ref="_fileInputRef" OnChange="OnInputFileChange" accept="image/png, image/jpeg" />
+        @if (!string.IsNullOrEmpty(_avatarPreview))
         {
-            <img src="@avatarPreview" style="max-width:150px;max-height:150px;border-radius:50%;margin-top:8px;" />
+            <img src="@_avatarPreview" style="max-width:150px;max-height:150px;border-radius:50%;margin-top:8px;" />
         }
     </div>
     <button class="btn btn-success w-100" type="submit">Register</button>
@@ -34,70 +37,70 @@
     </div>
 </EditForm>
 
-<CropperModal Show="@showCropper"
-              ImageUrl="@cropperImageUrl"
+<CropperModal Show="@_showCropper"
+              ImageUrl="@_cropperImageUrl"
               OnCrop="@OnAvatarCropped"
               OnClose="@CloseCropperModal" />
 
-@if (!string.IsNullOrEmpty(error))
+@if (!string.IsNullOrEmpty(_error))
 {
-    <div class="alert alert-danger">@error</div>
+    <div class="alert alert-danger">@_error</div>
 }
 
 @code {
-    private Application.DTOs.RegisterUserDto register = new();
-    private string? error;
+    private RegisterUserDto _register = new();
+    private string? _error;
 
-    private IBrowserFile? avatarFile;
-    private string? avatarPreview;
-    private string? avatarBase64;
-    private bool showCropper = false;
-    private string? cropperImageUrl;
-    private InputFile fileInputRef; 
+    private IBrowserFile? _avatarFile;
+    private string? _avatarPreview;
+    private string? _avatarBase64;
+    private bool _showCropper = false;
+    private string? _cropperImageUrl;
+    private InputFile _fileInputRef; 
 
     private async Task OnInputFileChange(InputFileChangeEventArgs e)
     {
-        avatarFile = e.File;
-        var buffer = new byte[avatarFile.Size];
-        await avatarFile.OpenReadStream(5 * 1024 * 1024).ReadAsync(buffer);
-        cropperImageUrl = $"data:{avatarFile.ContentType};base64,{Convert.ToBase64String(buffer)}";
-        showCropper = true;
+        _avatarFile = e.File;
+        var buffer = new byte[_avatarFile.Size];
+        await _avatarFile.OpenReadStream(5 * 1024 * 1024).ReadAsync(buffer);
+        _cropperImageUrl = $"data:{_avatarFile.ContentType};base64,{Convert.ToBase64String(buffer)}";
+        _showCropper = true;
     }
 
     private async Task OnAvatarCropped(string? croppedBase64)
     {
-        avatarPreview = croppedBase64;
-        avatarBase64 = croppedBase64;
-        showCropper = false;
+        _avatarPreview = croppedBase64;
+        _avatarBase64 = croppedBase64;
+        _showCropper = false;
         StateHasChanged();
     }
 
     private async Task CloseCropperModal()
     {
-        showCropper = false;
-        await JS.InvokeVoidAsync("focusElement", fileInputRef);
+        _showCropper = false;
+        await Js.InvokeVoidAsync("focusElement", _fileInputRef);
         StateHasChanged();
     }
 
     private async Task HandleRegister()
     {
-        error = null;
-        if (string.IsNullOrWhiteSpace(register.Username) ||
-            string.IsNullOrWhiteSpace(register.Password) ||
-            string.IsNullOrWhiteSpace(register.Email))
+        _error = null;
+        if (string.IsNullOrWhiteSpace(_register.Username) ||
+            string.IsNullOrWhiteSpace(_register.Password) ||
+            string.IsNullOrWhiteSpace(_register.Email))
         {
-            error = "Please fill in all required fields!";
+            _error = "Please fill in all required fields!";
             return;
         }
 
         var content = new MultipartFormDataContent();
-        content.Add(new StringContent(register.Username), "Username");
-        content.Add(new StringContent(register.Password), "Password");
-        content.Add(new StringContent(register.Email), "Email");
+        content.Add(new StringContent(_register.Username), "Login");
+        content.Add(new StringContent(_register.Password), "Password");
+        content.Add(new StringContent(_register.Email), "Email");
 
-        if (!string.IsNullOrEmpty(avatarBase64))
+        if (!string.IsNullOrEmpty(_avatarBase64))
         {
-            var base64Data = avatarBase64.Substring(avatarBase64.IndexOf(",") + 1);
+            var base64Data = _avatarBase64.Substring(_avatarBase64.IndexOf(",") + 1);
             var bytes = Convert.FromBase64String(base64Data);
             var byteContent = new ByteArrayContent(bytes);
             byteContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
@@ -108,21 +111,21 @@
 
         if (!response.IsSuccessStatusCode)
         {
-            error = "Registration failed.";
+            _error = "Registration failed.";
             return;
         }
 
         var result = await response.Content.ReadFromJsonAsync<AuthResult>();
         if (result is not null)
         {
-            await UserState.SetAuthAsync(result.token, result.user);
+            await UserState.SetAuthAsync(result.Token, result.User);
             Nav.NavigateTo("/");
         }
     }
 
     public class AuthResult
     {
-        public string token { get; set; } = default!;
-        public Application.DTOs.UserDto user { get; set; } = default!;
+        public string Token { get; set; } = default!;
+        public UserDto User { get; set; } = default!;
     }
 }

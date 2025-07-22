@@ -1,7 +1,8 @@
 @page "/snippets"
 @inject HttpClient Http
 @inject UserState UserState
-@using Application.DTOs
+@using Application.DTOs.SnippetsDtos
+@using Web.AuthService
 
 @if (!UserState.IsAuthenticated)
 {
@@ -20,14 +21,14 @@ else
                 <i class="bi bi-plus-lg"></i> New Snippet
             </a>
         </div>
-        @if (snippets == null)
+        @if (_snippets == null)
         {
             <div class="text-center text-secondary mt-5">
                 <div class="spinner-border" role="status"></div>
                 <p class="mt-2"><em>Loading snippets...</em></p>
             </div>
         }
-        else if (!snippets.Any())
+        else if (!_snippets.Any())
         {
             <div class="alert alert-info mt-4">
                 No snippets found. <a href="/snippets/new">Create the first one!</a>
@@ -36,7 +37,7 @@ else
         else
         {
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                @foreach (var s in snippets)
+                @foreach (var s in _snippets)
                 {
                     <div class="col">
                         <div class="card h-100 shadow-sm border-0">
@@ -67,15 +68,15 @@ else
 }
 
 @code {
-    private List<SnippetDto>? snippets;
-    private bool initialized = false;
-    private bool isLoaded = false;
+    private List<SnippetDto>? _snippets;
+    private bool _initialized = false;
+    private bool _isLoaded = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!initialized)
+        if (!_initialized)
         {
-            initialized = true;
+            _initialized = true;
             await UserState.InitializeAsync();
             
             if (!UserState.IsAuthenticated)
@@ -85,9 +86,9 @@ else
                 return;
             Http.DefaultRequestHeaders.Authorization =
                 new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", UserState.Token);
-            snippets = await Http.GetFromJsonAsync<List<SnippetDto>>($"/api/snippets?ownerId={ownerId}");
+            _snippets = await Http.GetFromJsonAsync<List<SnippetDto>>($"/api/snippets?ownerId={ownerId}");
 
-            isLoaded = true;
+            _isLoaded = true;
             StateHasChanged();
         }
         
@@ -100,6 +101,6 @@ else
 
         var response = await Http.DeleteAsync($"/api/snippets/{id}");
         if (response.IsSuccessStatusCode)
-            snippets = snippets!.Where(x => x.Id != id).ToList();
+            _snippets = _snippets!.Where(x => x.Id != id).ToList();
     }
 }

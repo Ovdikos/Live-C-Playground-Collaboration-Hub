@@ -1,19 +1,22 @@
 @page "/login"
+@using Application.DTOs.LoginRegisterDtos
+@using Application.DTOs.UserDtos
+@using Web.AuthService
 @inject HttpClient Http
 @inject NavigationManager Nav
 @inject UserState UserState
 
-<EditForm Model="login" OnValidSubmit="HandleLogin">
+<EditForm Model="_login" OnValidSubmit="HandleLogin">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
     <div class="mb-3">
-        <label>Username</label>
-        <InputText class="form-control" @bind-Value="login.Username" />
+        <label>Login</label>
+        <InputText class="form-control" @bind-Value="_login.Login" />
     </div>
     <div class="mb-3">
         <label>Password</label>
-        <InputText class="form-control" type="password" @bind-Value="login.Password" />
+        <InputText class="form-control" type="password" @bind-Value="_login.Password" />
     </div>
     <button class="btn btn-primary w-100" type="submit">Login</button>
     <div class="text-center mt-3">
@@ -21,23 +24,23 @@
     </div>
 </EditForm>
 
-@if (!string.IsNullOrEmpty(error))
+@if (!string.IsNullOrEmpty(_error))
 {
-    <div class="alert alert-danger">@error</div>
+    <div class="alert alert-danger">@_error</div>
 }
 
 @code {
-    private LoginUserDto login = new();
-    private string? error;
+    private LoginUserDto _login = new();
+    private string? _error;
 
     private async Task HandleLogin()
     {
-        error = null;
-        var response = await Http.PostAsJsonAsync("/api/auth/login", login);
+        _error = null;
+        var response = await Http.PostAsJsonAsync("/api/auth/login", _login);
         if (!response.IsSuccessStatusCode)
         {
             var errorObj = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-            error = errorObj?["error"] ?? "Login failed.";
+            _error = errorObj?["error"] ?? "Login failed.";
             return;
         }
         var result = await response.Content.ReadFromJsonAsync<AuthResult>();

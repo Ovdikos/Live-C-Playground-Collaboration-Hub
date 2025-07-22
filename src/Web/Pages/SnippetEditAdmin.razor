@@ -5,69 +5,71 @@
 
 @using System.Net.Http.Json
 @using Application.DTOs
+@using Application.DTOs.SnippetsDtos
+@using Web.AuthService
 
 <h3>Edit Snippet</h3>
 
-@if (isLoading)
+@if (_isLoading)
 {
     <div>Loading...</div>
 }
-else if (notFound)
+else if (_notFound)
 {
     <div class="alert alert-warning">Snippet not found.</div>
 }
-else if (snippet != null)
+else if (_snippet != null)
 {
-    <EditForm Model="snippet" OnValidSubmit="Save">
+    <EditForm Model="_snippet" OnValidSubmit="Save">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
         <div class="mb-3">
             <label class="form-label">Title:</label>
-            <InputText @bind-Value="snippet.Title" class="form-control" />
+            <InputText @bind-Value="_snippet.Title" class="form-control" />
         </div>
         <div class="mb-3">
             <label class="form-label">Content:</label>
-            <InputTextArea @bind-Value="snippet.Content" class="form-control" rows="6" />
+            <InputTextArea @bind-Value="_snippet.Content" class="form-control" rows="6" />
         </div>
         <div class="mb-3">
             <label class="form-label">Is Public:</label>
-            <InputCheckbox @bind-Value="snippet.IsPublic" />
+            <InputCheckbox @bind-Value="_snippet.IsPublic" />
         </div>
         <div class="mb-3">
             <label class="form-label">Created At:</label>
-            <input value="@(snippet.CreatedAt.ToString("yyyy-MM-dd HH:mm"))" class="form-control" disabled />
+            <input value="@(_snippet.CreatedAt.ToString("yyyy-MM-dd HH:mm"))" class="form-control" disabled />
         </div>
         <div class="mb-3">
             <label class="form-label">Updated At:</label>
-            <input value="@(snippet.UpdatedAt.ToString("yyyy-MM-dd HH:mm") ?? "—")" class="form-control" disabled />
+            <input value="@(_snippet.UpdatedAt.ToString("yyyy-MM-dd HH:mm") ?? "—")" class="form-control" disabled />
         </div>
         <div class="mb-3">
             <label class="form-label">Owner:</label>
-            <input value="@snippet.OwnerName" class="form-control" disabled />
+            <input value="@_snippet.OwnerName" class="form-control" disabled />
         </div>
-        <button class="btn btn-success" type="submit" disabled="@isSaving">Save</button>
-        <button class="btn btn-danger ms-3" type="button" @onclick="ShowDeleteConfirm" disabled="@isSaving">Delete</button>
-        @if (saved)
+        <button class="btn btn-success" type="submit" disabled="@_isSaving">Save</button>
+        <button class="btn btn-danger ms-3" type="button" @onclick="ShowDeleteConfirm" disabled="@_isSaving">Delete</button>
+        @if (_saved)
         {
             <span class="text-success ms-3">Saved!</span>
         }
-        @if (!string.IsNullOrEmpty(error))
+        @if (!string.IsNullOrEmpty(_error))
         {
-            <div class="alert alert-danger mt-2">@error</div>
+            <div class="alert alert-danger mt-2">@_error</div>
         }
     </EditForm>
 }
 
-@if (showDeleteConfirm)
+@if (_showDeleteConfirm)
 {
     <div class="modal-backdrop" style="z-index:2000;">
         <div class="modal-dialog">
             <h5>Delete this snippet?</h5>
-            <div style="margin-bottom:10px;">Are you sure you want to delete "<b>@snippet?.Title</b>"?</div>
+            <div style="margin-bottom:10px;">Are you sure you want to delete "<b>@_snippet?.Title</b>"?</div>
             <div style="display:flex;justify-content:flex-end;gap:12px;">
-                <button class="btn btn-secondary" @onclick="CancelDelete" disabled="@isSaving">Cancel</button>
-                <button class="btn btn-danger" @onclick="DeleteSnippet" disabled="@isSaving">Delete</button>
+                <button class="btn btn-secondary" @onclick="CancelDelete" disabled="@_isSaving">Cancel</button>
+                <button class="btn btn-danger" @onclick="DeleteSnippet" disabled="@_isSaving">Delete</button>
             </div>
         </div>
     </div>
@@ -76,13 +78,13 @@ else if (snippet != null)
 @code {
     [Parameter] public string Title { get; set; } = "";
 
-    private SnippetDto? snippet;
-    private bool isLoading = true;
-    private bool notFound = false;
-    private string? error;
-    private bool isSaving = false;
-    private bool saved = false;
-    private bool showDeleteConfirm = false;
+    private SnippetDto? _snippet;
+    private bool _isLoading = true;
+    private bool _notFound = false;
+    private string? _error;
+    private bool _isSaving = false;
+    private bool _saved = false;
+    private bool _showDeleteConfirm = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -97,58 +99,58 @@ else if (snippet != null)
 
         try
         {
-            snippet = await Http.GetFromJsonAsync<SnippetDto>($"/api/admin/snippet?title={Uri.EscapeDataString(Title)}");
-            notFound = snippet == null;
+            _snippet = await Http.GetFromJsonAsync<SnippetDto>($"/api/admin/snippet?title={Uri.EscapeDataString(Title)}");
+            _notFound = _snippet == null;
         }
         catch
         {
-            notFound = true;
+            _notFound = true;
         }
-        isLoading = false;
+        _isLoading = false;
     }
 
     private async Task Save()
     {
-        error = null;
-        saved = false;
-        isSaving = true;
+        _error = null;
+        _saved = false;
+        _isSaving = true;
         try
         {
-            var response = await Http.PutAsJsonAsync("/api/admin/snippet", snippet);
+            var response = await Http.PutAsJsonAsync("/api/admin/snippet", _snippet);
             if (response.IsSuccessStatusCode)
             {
-                saved = true;
+                _saved = true;
             }
             else
             {
-                error = "Failed to save snippet.";
+                _error = "Failed to save snippet.";
             }
         }
         catch
         {
-            error = "Failed to save snippet.";
+            _error = "Failed to save snippet.";
         }
-        isSaving = false;
+        _isSaving = false;
     }
 
     private void ShowDeleteConfirm()
     {
-        showDeleteConfirm = true;
+        _showDeleteConfirm = true;
     }
 
     private void CancelDelete()
     {
-        showDeleteConfirm = false;
+        _showDeleteConfirm = false;
     }
 
     private async Task DeleteSnippet()
     {
-        if (snippet == null) return;
-        isSaving = true;
-        error = null;
+        if (_snippet == null) return;
+        _isSaving = true;
+        _error = null;
         try
         {
-            var response = await Http.DeleteAsync($"/api/admin/snippet/{snippet.Id}");
+            var response = await Http.DeleteAsync($"/api/admin/snippet/{_snippet.Id}");
             if (response.IsSuccessStatusCode)
             {
                 Nav.NavigateTo("/admin?tab=snippets", true);
@@ -156,15 +158,15 @@ else if (snippet != null)
             else
             {
                 var content = await response.Content.ReadAsStringAsync();
-                error = $"Failed to delete snippet. Server: {content}";
+                _error = $"Failed to delete snippet. Server: {content}";
 
             }
         }
         catch
         {
-            error = "Failed to delete snippet.";
+            _error = "Failed to delete snippet.";
         }
-        isSaving = false;
-        showDeleteConfirm = false;
+        _isSaving = false;
+        _showDeleteConfirm = false;
     }
 }

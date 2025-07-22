@@ -20,7 +20,6 @@ public class User
     public ICollection<CodeSnippet> CodeSnippets { get; set; } = new List<CodeSnippet>();
     
     public ICollection<CollabSession> OwnedSessions { get; set; } = new List<CollabSession>();
-    // For future (maybe)
     public ICollection<CollabParticipant> CollabParticipants { get; set; } = new List<CollabParticipant>();
     
     

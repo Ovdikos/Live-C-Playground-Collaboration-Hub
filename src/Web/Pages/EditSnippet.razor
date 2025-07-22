@@ -3,34 +3,36 @@
 @inject UserState UserState
 @inject NavigationManager Nav
 
-@using Application.DTOs
-@using Application.Features.CodeSnippets.Commands
+@using Application.DTOs.SnippetsDtos
+@using Application.Features.CodeSnippets.Commands.UpdateCodeSnippet
+@using Web.AuthService
+
 
 <h3 class="fw-bold mb-4">Edit Snippet</h3>
 
-@if (error != null)
+@if (_error != null)
 {
-    <div class="alert alert-danger">@error</div>
+    <div class="alert alert-danger">@_error</div>
 }
-else if (snippet == null)
+else if (_snippet == null)
 {
     <div>Loading...</div>
 }
 else
 {
-    <EditForm Model="snippet" OnValidSubmit="HandleEdit">
+    <EditForm Model="_snippet" OnValidSubmit="HandleEdit">
         <DataAnnotationsValidator />
         <ValidationSummary />
         <div class="mb-3">
             <label>Title</label>
-            <InputText class="form-control" @bind-Value="snippet.Title" />
+            <InputText class="form-control" @bind-Value="_snippet.Title" />
         </div>
         <div class="mb-3">
             <label>Content</label>
-            <InputTextArea class="form-control" @bind-Value="snippet.Content" Rows="7"/>
+            <InputTextArea class="form-control" @bind-Value="_snippet.Content" Rows="7"/>
         </div>
         <div class="mb-3 form-check">
-            <InputCheckbox class="form-check-input" @bind-Value="snippet.IsPublic" />
+            <InputCheckbox class="form-check-input" @bind-Value="_snippet.IsPublic" />
             <label class="form-check-label">Make public</label>
         </div>
         <button type="submit" class="btn btn-success w-100">Save</button>
@@ -40,17 +42,17 @@ else
 @code {
     [Parameter] public Guid Id { get; set; }
 
-    private UpdateCodeSnippetCommand? snippet;
-    private string? error;
-    private bool initialized = false;
-    private bool isLoaded = false;
+    private UpdateCodeSnippetCommand? _snippet;
+    private string? _error;
+    private bool _initialized = false;
+    private bool _isLoaded = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
 
-        if (!initialized)
+        if (!_initialized)
         {
-            initialized = true;
+            _initialized = true;
             await UserState.InitializeAsync();
             
             Http.DefaultRequestHeaders.Authorization =
@@ -61,10 +63,10 @@ else
                 var data = await Http.GetFromJsonAsync<SnippetDto>($"/api/snippets/{Id}");
                 if (data == null)
                 {
-                    error = "Snippet not found.";
+                    _error = "Snippet not found.";
                     return;
                 }
-                snippet = new UpdateCodeSnippetCommand
+                _snippet = new UpdateCodeSnippetCommand
                 {
                     Id = data.Id,
                     Title = data.Title,
@@ -74,10 +76,10 @@ else
             }
             catch
             {
-                error = "Error loading snippet.";
+                _error = "Error loading snippet.";
             }
 
-            isLoaded = true;
+            _isLoaded = true;
             StateHasChanged();
 
         }
@@ -85,11 +87,11 @@ else
 
     private async Task HandleEdit()
     {
-        if (snippet == null) return;
-        var response = await Http.PutAsJsonAsync($"/api/snippets/{Id}", snippet);
+        if (_snippet == null) return;
+        var response = await Http.PutAsJsonAsync($"/api/snippets/{Id}", _snippet);
         if (response.IsSuccessStatusCode)
             Nav.NavigateTo($"/snippets/{Id}", true);
         else
-            error = "Failed to update snippet.";
+            _error = "Failed to update snippet.";
     }
 }

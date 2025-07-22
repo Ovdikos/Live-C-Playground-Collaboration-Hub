@@ -12,7 +12,6 @@ public class CodeSnippet
     
     public User? Owner { get; set; }
     
-    // For future (maybe)
     public ICollection<CollabSession> CollabSessions { get; set; } = new List<CollabSession>();
     
 }

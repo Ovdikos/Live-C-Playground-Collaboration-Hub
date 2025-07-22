@@ -1,9 +1,13 @@
 ﻿@page "/admin"
+@using Application.DTOs.SessionDtos
+@using Application.DTOs.SnippetsDtos
+@using Application.DTOs.UserDtos
+@using Web.AuthService
 @inject UserState UserState
 @inject NavigationManager Nav
 @inject HttpClient Http
 
-@if (!isLoaded)
+@if (!_isLoaded)
 {
     <div style="margin-top:50px; text-align:center;">
         <span>Loading...</span>
@@ -19,24 +23,24 @@ else
         <h1 class="admin-title">Admin Panel</h1>
 
         <div class="admin-tabs">
-            <button class="admin-tab-btn @(activeTab == "users" ? "active" : "")" @onclick="@(() => SetTab("users"))">Users</button>
-            <button class="admin-tab-btn @(activeTab == "snippets" ? "active" : "")" @onclick="@(() => SetTab("snippets"))">Snippets</button>
-            <button class="admin-tab-btn @(activeTab == "sessions" ? "active" : "")" @onclick="@(() => SetTab("sessions"))">Sessions</button>
-            <button class="admin-tab-btn @(activeTab == "stats" ? "active" : "")" @onclick="@(() => SetTab("stats"))">Stats</button>
+            <button class="admin-tab-btn @(_activeTab == "users" ? "active" : "")" @onclick="@(() => SetTab("users"))">Users</button>
+            <button class="admin-tab-btn @(_activeTab == "snippets" ? "active" : "")" @onclick="@(() => SetTab("snippets"))">Snippets</button>
+            <button class="admin-tab-btn @(_activeTab == "sessions" ? "active" : "")" @onclick="@(() => SetTab("sessions"))">SessionDtoss</button>
+            <button class="admin-tab-btn @(_activeTab == "stats" ? "active" : "")" @onclick="@(() => SetTab("stats"))">Stats</button>
         </div>
 
         <div class="admin-content">
-            @if (activeTab == "users")
+            @if (_activeTab == "users")
             {
                 <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
                     <h3 style="margin: 0;">Users List</h3>
                     <button class="btn btn-primary" style="height: 2.2rem;" @onclick="ShowFindUserModal">Find User</button>
                 </div>
-                @if (users == null)
+                @if (_users == null)
                 {
                     <span>Loading users...</span>
                 }
-                else if (users.Count == 0)
+                else if (_users.Count == 0)
                 {
                     <span>No users found.</span>
                 }
@@ -46,14 +50,14 @@ else
                         <thead>
                         <tr>
                             <th @onclick="@(() => SortBy("id"))" style="cursor:pointer;">ID @SortIcon("id")</th>
-                            <th @onclick="@(() => SortBy("username"))" style="cursor:pointer;">Username @SortIcon("username")</th>
+                            <th @onclick="@(() => SortBy("username"))" style="cursor:pointer;">Login @SortIcon("username")</th>
                             <th @onclick="@(() => SortBy("email"))" style="cursor:pointer;">Email @SortIcon("email")</th>
                             <th @onclick="@(() => SortBy("createdat"))" style="cursor:pointer;">Created At @SortIcon("createdat")</th>
                             <th @onclick="@(() => SortBy("isadmin"))" style="cursor:pointer;">IsAdmin @SortIcon("isadmin")</th>
                         </tr>
                         </thead>
                         <tbody>
-                        @foreach (var u in users)
+                        @foreach (var u in _users)
                         {
                             <tr>
                                 <td>@u.Id</td>
@@ -67,7 +71,7 @@ else
                     </table>
                 }
             }
-            else if (activeTab == "snippets")
+            else if (_activeTab == "snippets")
             {
                 <div>
                     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
@@ -80,11 +84,11 @@ else
                         <button class="btn btn-success btn-sm" @onclick="@(() => SetSnippetsFilter(true))">Public</button>
                         <button class="btn btn-warning btn-sm" @onclick="@(() => SetSnippetsFilter(false))">Private</button>
                     </div>
-                    @if (snippetsLoading)
+                    @if (_snippetsLoading)
                     {
                         <div>Loading snippets...</div>
                     }
-                    else if (snippets == null || snippets.Count == 0)
+                    else if (_snippets == null || _snippets.Count == 0)
                     {
                         <div>No snippets found.</div>
                     }
@@ -102,7 +106,7 @@ else
                             </tr>
                             </thead>
                             <tbody>
-                            @foreach (var s in snippets)
+                            @foreach (var s in _snippets)
                             {
                                 <tr>
                                     <td>@s.Title</td>
@@ -120,32 +124,32 @@ else
                     }
                 </div>
             }
-            else if (activeTab == "sessions")
+            else if (_activeTab == "sessions")
             {
                 <div>
                     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                        <h3 style="margin: 0;">Sessions Management</h3>
-                        <button class="btn btn-primary" style="height: 2.2rem;" @onclick="ShowFindSessionModal">Find Session</button>
+                        <h3 style="margin: 0;">SessionDtoss Management</h3>
+                        <button class="btn btn-primary" style="height: 2.2rem;" @onclick="ShowFindSessionModal">Find SessionDtos</button>
                     </div>
                     <div style="margin-bottom: 1rem;">
                         <input class="form-control" style="width:180px;display:inline;margin-right:8px;"
-                               @bind="sessionSearch" placeholder="Search..." />
+                               @bind="_sessionSearch" placeholder="Search..." />
                         <select class="form-control" style="width:120px;display:inline;margin-right:8px;"
-                                @bind="sessionIsActive">
+                                @bind="_sessionIsActive">
                             <option value="">All</option>
                             <option value="true">Active</option>
                             <option value="false">Inactive</option>
                         </select>
                         <input class="form-control" style="width:160px;display:inline;margin-right:8px;"
-                               type="number" min="0" @bind="minParticipants" placeholder="Min participants" />
+                               type="number" min="0" @bind="_minParticipants" placeholder="Min participants" />
                         <button class="btn btn-primary" @onclick="LoadSessions">Filter</button>
                     </div>
 
-                    @if (isLoadingSessions)
+                    @if (_isLoadingSessions)
                     {
                         <span>Loading sessions...</span>
                     }
-                    else if (sessions is null || sessions.Count == 0)
+                    else if (_sessions is null || _sessions.Count == 0)
                     {
                         <span>No sessions found.</span>
                     }
@@ -165,7 +169,7 @@ else
                             </tr>
                             </thead>
                             <tbody>
-                            @foreach (var sess in sessions)
+                            @foreach (var sess in _sessions)
                             {
                                 <tr>
                                     <td>@sess.Name</td>
@@ -188,7 +192,7 @@ else
                     }
                 </div>
             }
-            else if (activeTab == "stats")
+            else if (_activeTab == "stats")
             {
                 <p>Statistics and analytics here...</p>
             }
@@ -197,105 +201,105 @@ else
 }
 
 @* FIND MODALS *@
-@if (showFindUserModal)
+@if (_showFindUserModal)
 {
     <div class="modal-backdrop">
         <div class="modal-dialog">
             <h5 style="margin-bottom:12px;">Find User</h5>
-            <input class="form-control" @bind="findUserName" placeholder="Enter username..." autofocus  @onkeydown="OnFindUserKeyDown" />
+            <input class="form-control" @bind="_findUserName" placeholder="Enter username..." autofocus  @onkeydown="OnFindUserKeyDown" />
             <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;">
                 <button class="btn btn-secondary" @onclick="CloseFindUserModal">Cancel</button>
                 <button class="btn btn-primary" @onclick="FindUser">Find</button>
             </div>
-            @if (!string.IsNullOrEmpty(findUserError))
+            @if (!string.IsNullOrEmpty(_findUserError))
             {
-                <div style="color:#d00;margin-top:10px;">@findUserError</div>
+                <div style="color:#d00;margin-top:10px;">@_findUserError</div>
             }
         </div>
     </div>
 }
-@if (showFindSnippetModal)
+@if (_showFindSnippetModal)
 {
     <div class="modal-backdrop">
         <div class="modal-dialog">
             <h5 style="margin-bottom:12px;">Find Snippet</h5>
-            <input class="form-control" @bind="findSnippetTitle" placeholder="Enter snippet title..." autofocus @onkeydown="OnFindSnippetKeyDown" />
+            <input class="form-control" @bind="_findSnippetTitle" placeholder="Enter snippet title..." autofocus @onkeydown="OnFindSnippetKeyDown" />
             <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;">
                 <button class="btn btn-secondary" @onclick="CloseFindSnippetModal">Cancel</button>
                 <button class="btn btn-primary" @onclick="FindSnippet">Find</button>
             </div>
-            @if (!string.IsNullOrEmpty(findSnippetError))
+            @if (!string.IsNullOrEmpty(_findSnippetError))
             {
-                <div style="color:#d00;margin-top:10px;">@findSnippetError</div>
+                <div style="color:#d00;margin-top:10px;">@_findSnippetError</div>
             }
         </div>
     </div>
 }
-@if (showFindSessionModal)
+@if (_showFindSessionModal)
 {
     <div class="modal-backdrop">
         <div class="modal-dialog">
-            <h5 style="margin-bottom:12px;">Find Session</h5>
-            <input class="form-control" @bind="findSessionName" placeholder="Enter session name..." autofocus @onkeydown="OnFindSessionKeyDown" />
+            <h5 style="margin-bottom:12px;">Find SessionDtos</h5>
+            <input class="form-control" @bind="_findSessionName" placeholder="Enter session name..." autofocus @onkeydown="OnFindSessionKeyDown" />
             <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;">
                 <button class="btn btn-secondary" @onclick="CloseFindSessionModal">Cancel</button>
                 <button class="btn btn-primary" @onclick="FindSession">Find</button>
             </div>
-            @if (!string.IsNullOrEmpty(findSessionError))
+            @if (!string.IsNullOrEmpty(_findSessionError))
             {
-                <div style="color:#d00;margin-top:10px;">@findSessionError</div>
+                <div style="color:#d00;margin-top:10px;">@_findSessionError</div>
             }
         </div>
     </div>
 }
 
 @code {
-    private string activeTab = "users";
-    private bool isLoaded = false;
-    private bool initialized = false;
+    private string _activeTab = "users";
+    private bool _isLoaded = false;
+    public bool _initialized = false;
 
-    private List<UserDto>? users;
-    private string? orderBy = null;
-    private bool desc = false;
+    private List<UserDto>? _users;
+    private string? _orderBy = null;
+    private bool _desc = false;
 
     // FIND MODALS
-    private bool showFindUserModal = false;
-    private string findUserName = "";
-    private string findUserError = "";
+    public bool _showFindUserModal = false;
+    private string _findUserName = "";
+    private string _findUserError = "";
 
-    private bool showFindSnippetModal = false;
-    private string findSnippetTitle = "";
-    private string findSnippetError = "";
+    private bool _showFindSnippetModal = false;
+    private string _findSnippetTitle = "";
+    private string _findSnippetError = "";
 
-    private bool showFindSessionModal = false;
-    private string findSessionName = "";
-    private string findSessionError = "";
+    private bool _showFindSessionModal = false;
+    private string _findSessionName = "";
+    private string _findSessionError = "";
 
     // SNIPPETS
-    private List<SnippetDto>? snippets;
-    private bool? filterIsPublic = null;
-    private bool snippetsLoading = false;
+    private List<SnippetDto>? _snippets;
+    private bool? _filterIsPublic = null;
+    private bool _snippetsLoading = false;
 
     // SESSIONS
-    private List<CollabSessionDetailsDto>? sessions;
-    private string? sessionSearch = null;
-    private bool? sessionIsActive = null;
-    private int? minParticipants = null;
-    private bool isLoadingSessions = false;
+    private List<CollabSessionDetailsDto>? _sessions;
+    private string? _sessionSearch = null;
+    private string? _sessionIsActive = "";
+    private int? _minParticipants = null;
+    private bool _isLoadingSessions = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!initialized)
+        if (!_initialized)
         {
-            initialized = true;
+            _initialized = true;
             await UserState.InitializeAsync();
-            isLoaded = true;
+            _isLoaded = true;
             if (UserState.User?.IsAdmin == true)
             {
                 await LoadUsers();
-                if (activeTab == "snippets")
+                if (_activeTab == "snippets")
                     await LoadSnippets();
-                if (activeTab == "sessions")
+                if (_activeTab == "sessions")
                     await LoadSessions();
             }
             StateHasChanged();
@@ -304,7 +308,7 @@ else
 
     private void SetTab(string tab)
     {
-        activeTab = tab;
+        _activeTab = tab;
         if (tab == "users")
             _ = LoadUsers();
         else if (tab == "snippets")
@@ -315,134 +319,135 @@ else
 
     private async Task SortBy(string field)
     {
-        if (orderBy == field)
-            desc = !desc;
+        if (_orderBy == field)
+            _desc = !_desc;
         else
         {
-            orderBy = field;
-            desc = false;
+            _orderBy = field;
+            _desc = false;
         }
         await LoadUsers();
     }
 
     private RenderFragment SortIcon(string field) => builder =>
     {
-        if (orderBy == field)
+        if (_orderBy == field)
         {
             builder.OpenElement(0, "span");
             builder.AddAttribute(1, "style", "font-size:12px;margin-left:4px;");
-            builder.AddContent(2, desc ? "▼" : "▲");
+            builder.AddContent(2, _desc ? "▼" : "▲");
             builder.CloseElement();
         }
     };
 
     private async Task LoadUsers()
     {
-        users = null;
+        _users = null;
         Http.DefaultRequestHeaders.Authorization = null;
         Http.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", UserState.Token);
 
         var url = "/api/admin/users";
         var queryParams = new List<string>();
-        if (!string.IsNullOrEmpty(orderBy))
-            queryParams.Add($"orderBy={orderBy}");
-        if (desc)
+        if (!string.IsNullOrEmpty(_orderBy))
+            queryParams.Add($"orderBy={_orderBy}");
+        if (_desc)
             queryParams.Add("desc=true");
         if (queryParams.Count > 0)
             url += "?" + string.Join("&", queryParams);
 
         try
         {
-            users = await Http.GetFromJsonAsync<List<UserDto>>(url);
+            _users = await Http.GetFromJsonAsync<List<UserDto>>(url);
         }
         catch
         {
-            users = new List<UserDto>();
+            _users = new List<UserDto>();
         }
         StateHasChanged();
     }
 
     private async Task LoadSnippets()
     {
-        snippetsLoading = true;
-        snippets = null;
+        _snippetsLoading = true;
+        _snippets = null;
         StateHasChanged();
         Http.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", UserState.Token);
 
         var url = "/api/admin/snippets";
-        if (filterIsPublic.HasValue)
-            url += $"?isPublic={filterIsPublic.Value.ToString().ToLower()}";
+        if (_filterIsPublic.HasValue)
+            url += $"?isPublic={_filterIsPublic.Value.ToString().ToLower()}";
 
         try
         {
-            snippets = await Http.GetFromJsonAsync<List<SnippetDto>>(url);
+            _snippets = await Http.GetFromJsonAsync<List<SnippetDto>>(url);
         }
         catch
         {
-            snippets = new List<SnippetDto>();
+            _snippets = new List<SnippetDto>();
         }
-        snippetsLoading = false;
+        _snippetsLoading = false;
         StateHasChanged();
     }
 
     private async Task SetSnippetsFilter(bool? isPublic)
     {
-        filterIsPublic = isPublic;
+        _filterIsPublic = isPublic;
         await LoadSnippets();
     }
 
     private async Task LoadSessions()
     {
-        isLoadingSessions = true;
-        sessions = null;
+        _isLoadingSessions = true;
+        _sessions = null;
         StateHasChanged();
         Http.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", UserState.Token);
 
         var url = "/api/admin/sessions?";
-        if (!string.IsNullOrWhiteSpace(sessionSearch)) url += $"search={sessionSearch}&";
-        if (sessionIsActive.HasValue) url += $"isActive={sessionIsActive}&";
-        if (minParticipants.HasValue) url += $"minParticipants={minParticipants}&";
+        if (!string.IsNullOrWhiteSpace(_sessionSearch)) url += $"search={_sessionSearch}&";
+        if (!string.IsNullOrEmpty(_sessionIsActive) && (_sessionIsActive == "true" || _sessionIsActive == "false"))
+            url += $"isActive={_sessionIsActive}&";
+        if (_minParticipants.HasValue) url += $"minParticipants={_minParticipants}&";
 
         try
         {
-            sessions = await Http.GetFromJsonAsync<List<CollabSessionDetailsDto>>(url);
+            _sessions = await Http.GetFromJsonAsync<List<CollabSessionDetailsDto>>(url);
         }
         catch
         {
-            sessions = new List<CollabSessionDetailsDto>();
+            _sessions = new List<CollabSessionDetailsDto>();
         }
-        isLoadingSessions = false;
+        _isLoadingSessions = false;
         StateHasChanged();
     }
 
     // USER FIND MODAL
     private void ShowFindUserModal()
     {
-        findUserName = "";
-        findUserError = "";
-        showFindUserModal = true;
+        _findUserName = "";
+        _findUserError = "";
+        _showFindUserModal = true;
     }
 
     private void CloseFindUserModal()
     {
-        showFindUserModal = false;
-        findUserError = "";
-        findUserName = "";
+        _showFindUserModal = false;
+        _findUserError = "";
+        _findUserName = "";
     }
 
     private async Task FindUser()
     {
-        findUserError = "";
-        if (string.IsNullOrWhiteSpace(findUserName))
+        _findUserError = "";
+        if (string.IsNullOrWhiteSpace(_findUserName))
         {
-            findUserError = "Enter username!";
+            _findUserError = "Enter username!";
             return;
         }
-        Nav.NavigateTo($"/admin/user/{findUserName.Trim()}");
-        showFindUserModal = false;
+        Nav.NavigateTo($"/admin/user/{_findUserName.Trim()}");
+        _showFindUserModal = false;
     }
 
     private void OnFindUserKeyDown(KeyboardEventArgs e)
@@ -456,28 +461,28 @@ else
     // SNIPPET FIND MODAL
     private void ShowFindSnippetModal()
     {
-        findSnippetTitle = "";
-        findSnippetError = "";
-        showFindSnippetModal = true;
+        _findSnippetTitle = "";
+        _findSnippetError = "";
+        _showFindSnippetModal = true;
     }
 
     private void CloseFindSnippetModal()
     {
-        showFindSnippetModal = false;
-        findSnippetError = "";
-        findSnippetTitle = "";
+        _showFindSnippetModal = false;
+        _findSnippetError = "";
+        _findSnippetTitle = "";
     }
 
     private async Task FindSnippet()
     {
-        findSnippetError = "";
-        if (string.IsNullOrWhiteSpace(findSnippetTitle))
+        _findSnippetError = "";
+        if (string.IsNullOrWhiteSpace(_findSnippetTitle))
         {
-            findSnippetError = "Enter snippet title!";
+            _findSnippetError = "Enter snippet title!";
             return;
         }
-        Nav.NavigateTo($"/admin/snippet/{findSnippetTitle.Trim()}");
-        showFindSnippetModal = false;
+        Nav.NavigateTo($"/admin/snippet/{_findSnippetTitle.Trim()}");
+        _showFindSnippetModal = false;
     }
 
     private void OnFindSnippetKeyDown(KeyboardEventArgs e)
@@ -491,28 +496,28 @@ else
     // SESSION FIND MODAL
     private void ShowFindSessionModal()
     {
-        findSessionName = "";
-        findSessionError = "";
-        showFindSessionModal = true;
+        _findSessionName = "";
+        _findSessionError = "";
+        _showFindSessionModal = true;
     }
 
     private void CloseFindSessionModal()
     {
-        showFindSessionModal = false;
-        findSessionError = "";
-        findSessionName = "";
+        _showFindSessionModal = false;
+        _findSessionError = "";
+        _findSessionName = "";
     }
 
     private async Task FindSession()
     {
-        findSessionError = "";
-        if (string.IsNullOrWhiteSpace(findSessionName))
+        _findSessionError = "";
+        if (string.IsNullOrWhiteSpace(_findSessionName))
         {
-            findSessionError = "Enter session name!";
+            _findSessionError = "Enter session name!";
             return;
         }
-        Nav.NavigateTo($"/admin/session/{findSessionName.Trim()}");
-        showFindSessionModal = false;
+        Nav.NavigateTo($"/admin/session/{_findSessionName.Trim()}");
+        _showFindSessionModal = false;
     }
 
     private void OnFindSessionKeyDown(KeyboardEventArgs e)

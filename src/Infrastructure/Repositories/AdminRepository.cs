@@ -59,6 +59,9 @@ public class AdminRepository : IAdminRepository
             .Include(u => u.CollabParticipants)
             .ThenInclude(cp => cp.Session)
             .ThenInclude(s => s.CodeSnippet)
+            .Include(u => u.CollabParticipants)
+            .ThenInclude(cp => cp.Session)
+            .ThenInclude(s => s.Owner) 
             .FirstOrDefaultAsync(u => u.Username == username);
     }
 
@@ -110,8 +113,8 @@ public class AdminRepository : IAdminRepository
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(search))
-            query = query.Where(s => s.Name.Contains(search) || s.CodeSnippet.Title.Contains(search));
-
+            query = query.Where(s => s.Name.Contains(search));
+        
         if (isActive.HasValue)
             query = query.Where(s => s.IsActive == isActive.Value);
 

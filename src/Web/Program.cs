@@ -2,17 +2,41 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Application.DTOs;
+using Application.DTOs.LoginRegisterDtos;
+using Application.DTOs.SessionDtos;
+using Application.DTOs.SnippetsDtos;
+using Application.DTOs.UserDtos;
 using Application.Features.Admin.CleanupService;
 using Application.Features.Admin.Commands;
+using Application.Features.Admin.Commands.BlockUser;
+using Application.Features.Admin.Commands.DeleteCollabSession;
+using Application.Features.Admin.Commands.DeleteSnippet;
+using Application.Features.Admin.Commands.DeleteUser;
+using Application.Features.Admin.Commands.UpdateCollabSession;
+using Application.Features.Admin.Commands.UpdateSnippet;
 using Application.Features.Admin.Queries;
+using Application.Features.Admin.Queries.GetSnippetByTitle;
+using Application.Features.Admin.Queries.GetUserDetails;
+using Application.Features.Admin.Queries.GetUsers;
 using Application.Features.Auth.Commands;
+using Application.Features.Auth.Commands.RegisterUser;
 using Application.Features.Auth.Queries;
+using Application.Features.Auth.Queries.GetAllSessions;
+using Application.Features.Auth.Queries.GetAllSnippets;
+using Application.Features.Auth.Queries.LoginUser;
 using Application.Features.CodeSnippets.Commands;
+using Application.Features.CodeSnippets.Commands.CreateCodeSnippet;
+using Application.Features.CodeSnippets.Commands.DeleteCodeSnippet;
+using Application.Features.CodeSnippets.Commands.UpdateCodeSnippet;
 using Application.Features.CodeSnippets.Queries;
-using Application.Features.CollabSessions.Command;
-using Application.Features.CollabSessions.Query;
+using Application.Features.CodeSnippets.Queries.GetAllCodeSnippets;
+using Application.Features.CodeSnippets.Queries.GetCodeSnippetById;
+using Application.Features.CollabSessions.Commands.CreateCollabSession;
+using Application.Features.CollabSessions.Commands.EditCollabSession;
+using Application.Features.CollabSessions.Queries.GetCollabSessionsCreaterByUser;
+using Application.Features.CollabSessions.Queries.GetCollabSesssionsWhereUserIsParticipant;
+using Application.JwtToken;
 using Application.Mapper;
-using Application.Services;
 using AutoMapper;
 using Core.Entities;
 using Core.Interfaces;
@@ -28,13 +52,14 @@ using Microsoft.IdentityModel.Tokens;
 using Web.AuthService;
 using Web.Components;
 using Web.Pages;
+using GetCollabSessionDetailsQuery = Application.Features.Admin.Queries.GetCollabSessionDetails.GetCollabSessionDetailsQuery;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
 // Registering services
-// builder.Services.AddRazorComponents()
+// builder.JwtToken.AddRazorComponents()
      // .AddInteractiveServerComponents();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
@@ -42,7 +67,7 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddDbContext<LivePlaygroundDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Repositories/Services
+// Repositories/JwtToken
 builder.Services.AddScoped<ICodeSnippetRepository, CodeSnippetRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
@@ -72,7 +97,7 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblyContaining<GetAllCodeSnippetsQuery>());
 
 // Hosted Service
-builder.Services.AddHostedService<SessionCleanupService>();
+builder.Services.AddHostedService<SessionDeactivationService>();
 
 
 
@@ -120,7 +145,7 @@ app.UseAntiforgery();
 app.MapPost("/api/auth/register", async (HttpRequest req, IMediator mediator, IJwtTokenService jwt) =>
 {
     var form = await req.ReadFormAsync();
-    var username = form["Username"];
+    var username = form["Login"];
     var password = form["Password"];
     var email = form["Email"];
 
@@ -213,7 +238,7 @@ app.MapGet("/api/sessions/participating", async (IMediator mediator, Guid userId
 {
     try
     {
-    var result = await mediator.Send(new GetSessionsWhereUserIsParticipantQuery(userId));
+    var result = await mediator.Send(new GetCollabSessionsWhereUserIsParticipantQuery(userId));
     return Results.Ok(result);
     }
     catch (Exception ex)
@@ -227,7 +252,7 @@ app.MapGet("/api/sessions/owned", async (IMediator mediator, Guid userId) =>
 {
     try
     {
-    var result = await mediator.Send(new GetSessionsCreatedByUserQuery(userId));
+    var result = await mediator.Send(new GetCollabSessionsCreatedByUserQuery(userId));
     return Results.Ok(result);
     }
     catch (Exception ex)
@@ -266,7 +291,7 @@ app.MapPost("/api/sessions", async (
 
 // EDIT
 
-app.MapPut("/api/sessions/{id}", async (Guid id, EditSessionCommand command, IMediator mediator) =>
+app.MapPut("/api/sessions/{id}", async (Guid id, EditCollabSessionCommand command, IMediator mediator) =>
 {
     if (id != command.SessionId) return Results.BadRequest();
     var updated = await mediator.Send(command);
@@ -368,8 +393,8 @@ app.MapPut("/api/user/profile", async (
     if (user == null)
         return Results.NotFound();
 
-    if (dto.Username != user.Username && await repo.GetByUsernameAsync(dto.Username) is not null)
-        return Results.BadRequest("Username already taken");
+    if (dto.Username != user.Username && await repo.GetByUsernameOrEmailAsync(dto.Username) is not null)
+        return Results.BadRequest("Login already taken");
     if (dto.Email != user.Email && await repo.GetAllAsync() is var all && all.Any(u => u.Email == dto.Email))
         return Results.BadRequest("Email already taken");
 
@@ -436,7 +461,7 @@ app.MapGet("/api/admin/user/{username}", async (
     return Results.Ok(userDetails);
 }).RequireAuthorization();
 
-// Block/Unblock
+// BlockUser/Unblock
 app.MapPost("/api/admin/user/block", async (BlockUserCommand cmd, IMediator mediator, HttpContext ctx) =>
 {
     var isAdmin = ctx.User.Claims.Any(c => c.Type == "isAdmin" && c.Value == "True");

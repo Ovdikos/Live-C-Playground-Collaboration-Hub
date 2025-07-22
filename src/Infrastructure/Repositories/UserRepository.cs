@@ -25,8 +25,8 @@ public class UserRepository : IUserRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<User?> GetByUsernameAsync(string username) =>
-        await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+    public async Task<User?> GetByUsernameOrEmailAsync(string login) =>
+        await _context.Users.FirstOrDefaultAsync(u => u.Username == login || u.Email == login);
 
     public async Task<User?> GetByIdAsync(Guid id) =>
         await _context.Users.FirstOrDefaultAsync(u => u.Id == id);

@@ -8,8 +8,6 @@ public class CollabParticipant
 
     public DateTime JoinedAt { get; set; }
     
-    // public string? Role { get; set; }
-
     public CollabSession? Session { get; set; }
     public User? User { get; set; }
 }

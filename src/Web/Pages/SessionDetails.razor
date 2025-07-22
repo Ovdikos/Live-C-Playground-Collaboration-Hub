@@ -1,44 +1,46 @@
 ﻿@page "/sessions/{Id:guid}"
+@using Application.DTOs.SessionDtos
+@using Web.AuthService
 @inject HttpClient Http
 @inject UserState UserState
 
 
 @code {
     [Parameter] public Guid Id { get; set; }
-    private CollabSessionDto? session;
-    private string? error;
-    private bool initialized = false;
-    private bool isLoaded = false;
+    private CollabSessionDto? _session;
+    private string? _error;
+    private bool _initialized = false;
+    private bool _isLoaded = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
 
-        if (!initialized)
+        if (!_initialized)
         {
-            initialized = true;
+            _initialized = true;
             await UserState.InitializeAsync();
             
             try
             {
-                session = await Http.GetFromJsonAsync<CollabSessionDto>($"/api/sessions/{Id}");
+                _session = await Http.GetFromJsonAsync<CollabSessionDto>($"/api/sessions/{Id}");
             }
             catch
             {
-                error = "Failed to load session.";
+                _error = "Failed to load session.";
             }
 
-            isLoaded = true;
+            _isLoaded = true;
             StateHasChanged();
 
         }
     }
 }
 
-@if (error != null)
+@if (_error != null)
 {
-    <div class="alert alert-danger">@error</div>
+    <div class="alert alert-danger">@_error</div>
 }
-else if (session == null)
+else if (_session == null)
 {
     <p>Loading...</p>
 }
@@ -46,31 +48,39 @@ else
 {
     <div class="card mt-4">
         <div class="card-body">
-            <h2>@session.Name</h2>
-            <div><b>Owner:</b> @session.OwnerName</div>
-            <div><b>Created:</b> @session.CreatedAt.ToString("g")</div>
-            <div><b>Active:</b> @(session.IsActive ? "Yes" : "No")</div>
-            <div><b>Snippet:</b> @session.CodeSnippetTitle</div>
-            @if (!string.IsNullOrWhiteSpace(session.SnippetContent))
+            <h2>@_session.Name</h2>
+            <div><b>Owner:</b> @_session.OwnerName</div>
+            <div><b>Created:</b> @_session.CreatedAt.ToString("g")</div>
+            <div><b>Active:</b> @(_session.IsActive ? "Yes" : "No")</div>
+            <div><b>Snippet:</b> @_session.CodeSnippetTitle</div>
+            <div>
+                <div>
+                    <b>ExpiresAt:</b>
+                    @(_session.ExpiresAt != DateTime.MinValue
+                        ? _session.ExpiresAt.ToString("g")
+                        : "—")
+                </div>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(_session.SnippetContent))
             {
                 <pre class="bg-light rounded p-2 mt-2" style="max-width:100%; overflow-x:auto;">
-                    @session.SnippetContent
+                    @_session.SnippetContent
                 </pre>
             }
 
             <h5 class="mt-4">Participants</h5>
             <ul>
-                @foreach (var p in session.Participants)
+                @foreach (var p in _session.Participants)
                 {
                     <li>@p.Username (@p.Email) - joined @p.JoinedAt.ToString("g")</li>
                 }
             </ul>
 
-            @if (session.EditHistories != null && session.EditHistories.Any())
+            @if (_session.EditHistories != null && _session.EditHistories.Any())
             {
                 <h5 class="mt-4">Change History</h5>
                 <ul>
-                    @foreach (var h in session.EditHistories)
+                    @foreach (var h in _session.EditHistories)
                     {
                         <li>
                             <strong>@h.EditedByUsername</strong>
@@ -78,7 +88,7 @@ else
                             <div class="small">@h.Changes</div>
                         </li>
                     }
-                </ul>
+                </ul>   
             }
         </div>
     </div>

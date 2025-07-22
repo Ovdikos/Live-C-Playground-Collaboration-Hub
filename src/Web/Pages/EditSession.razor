@@ -1,46 +1,48 @@
 ﻿@page "/sessions/{Id:guid}/edit"
-@using Application.Features.CollabSessions.Command
+@using Application.DTOs.SessionDtos
+@using Application.Features.CollabSessions.Commands.EditCollabSession
+@using Web.AuthService
 @inject HttpClient Http
 @inject UserState UserState
 @inject NavigationManager Nav
 
-<h3 class="fw-bold mb-4">Edit Session</h3>
+<h3 class="fw-bold mb-4">Edit SessionDtos</h3>
 
-@if (session == null)
+@if (_collabSession == null)
 {
     <div>Loading...</div>
 }
 else
 {
-    <EditForm Model="session" OnValidSubmit="HandleEdit">
+    <EditForm Model="_collabSession" OnValidSubmit="HandleEdit">
         <DataAnnotationsValidator />
         <ValidationSummary />
         <div class="mb-3">
-            <label>Session Name</label>
-            <InputText class="form-control" @bind-Value="session.Name" />
+            <label>SessionDtos Name</label>
+            <InputText class="form-control" @bind-Value="_collabSession.Name" />
         </div>
         <div class="mb-3">
             <label>Code Content</label>
-            <InputTextArea class="form-control" @bind-Value="session.Content" Rows="12" />
+            <InputTextArea class="form-control" @bind-Value="_collabSession.Content" Rows="12" />
         </div>
         <div class="mb-3">
             <label>Change Comment (commit message)</label>
-            <InputText class="form-control" @bind-Value="session.Changes" />
+            <InputText class="form-control" @bind-Value="_collabSession.Changes" />
         </div>
         <button type="submit" class="btn btn-success w-100">Save</button>
     </EditForm>
 }
 
-@if (!string.IsNullOrEmpty(error))
+@if (!string.IsNullOrEmpty(_error))
 {
-    <div class="alert alert-danger mt-3">@error</div>
+    <div class="alert alert-danger mt-3">@_error</div>
 }
 
 <h5 class="mt-5">Edit History</h5>
-@if (history != null && history.Any())
+@if (_history != null && _history.Any())
 {
     <ul class="list-group">
-        @foreach (var h in history)
+        @foreach (var h in _history)
         {
             <li class="list-group-item">
                 <strong>@h.EditedByUsername</strong>
@@ -53,34 +55,34 @@ else
 
 @code {
     [Parameter] public Guid Id { get; set; }
-    private EditSessionCommand session = new();
-    private List<SessionEditHistoryDto> history = new();
-    private string? error;
-    private bool initialized = false;
-    private bool isLoaded = false;
+    private EditCollabSessionCommand _collabSession = new();
+    private List<SessionEditHistoryDto> _history = new();
+    private string? _error;
+    private bool _initialized = false;
+    private bool _isLoaded = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!initialized)
+        if (!_initialized)
         {
-            initialized = true;
+            _initialized = true;
             await UserState.InitializeAsync();
             
             var dto = await Http.GetFromJsonAsync<CollabSessionDto>($"/api/sessions/{Id}");
             if (dto == null)
             {
-                error = "Session not found";
+                _error = "SessionDtos not found";
                 return;
             }
-            session.SessionId = dto.Id;
-            session.Name = dto.Name;
-            session.Content = dto.Content ?? "";
-            session.EditedByUserId = UserState.User!.Id;
-            session.Changes = "";
+            _collabSession.SessionId = dto.Id;
+            _collabSession.Name = dto.Name;
+            _collabSession.Content = dto.Content ?? "";
+            _collabSession.EditedByUserId = UserState.User!.Id;
+            _collabSession.Changes = "";
 
-            history = await Http.GetFromJsonAsync<List<SessionEditHistoryDto>>($"/api/sessions/{Id}/history");
+            _history = await Http.GetFromJsonAsync<List<SessionEditHistoryDto>>($"/api/sessions/{Id}/history");
 
-            isLoaded = true;
+            _isLoaded = true;
             StateHasChanged();
         }
         
@@ -89,12 +91,12 @@ else
 
     private async Task HandleEdit()
     {
-        error = null;
-        var resp = await Http.PutAsJsonAsync($"/api/sessions/{Id}", session);
+        _error = null;
+        var resp = await Http.PutAsJsonAsync($"/api/sessions/{Id}", _collabSession);
         if (resp.IsSuccessStatusCode)
         {
             Nav.NavigateTo($"/sessions/{Id}", true);
         }
-        else error = "Failed to update session";
+        else _error = "SessionDtos is not active";
     }
 }

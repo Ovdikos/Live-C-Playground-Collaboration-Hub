@@ -1,10 +1,9 @@
 ﻿@using System.Text
-@using Microsoft.JSInterop
-@inject IJSRuntime JS
+@inject IJSRuntime Js
 
 @if (Show)
 {
-    <div @ref="modalRef" class="modal-overlay" tabindex="-1">
+    <div @ref="_modalRef" class="modal-overlay" tabindex="-1">
         <div class="modal-dialog-custom">
             <div class="modal-header-custom">
                 <h5>Crop avatar</h5>
@@ -34,27 +33,27 @@
     [Parameter] public string? ImageUrl { get; set; }
     [Parameter] public EventCallback<string> OnCrop { get; set; }
 
-    private bool cropperInit = false;
-    private ElementReference modalRef;
+    private bool _cropperInit = false;
+    private ElementReference _modalRef;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (Show && !cropperInit && ImageUrl != null)
+        if (Show && !_cropperInit && ImageUrl != null)
         {
-            await JS.InvokeVoidAsync("initCropper", "cropper-image");
-            cropperInit = true;
-            await JS.InvokeVoidAsync("focusElement", modalRef);
+            await Js.InvokeVoidAsync("initCropper", "cropper-image");
+            _cropperInit = true;
+            await Js.InvokeVoidAsync("focusElement", _modalRef);
         }
-        else if (!Show && cropperInit)
+        else if (!Show && _cropperInit)
         {
-            await JS.InvokeVoidAsync("destroyCropper");
-            cropperInit = false;
+            await Js.InvokeVoidAsync("destroyCropper");
+            _cropperInit = false;
         }
     }
     
     private async Task<string> GetLargeBase64FromJsAsync()
     {
-        int totalLength = await JS.InvokeAsync<int>("exportImageToBuffer");
+        int totalLength = await Js.InvokeAsync<int>("exportImageToBuffer");
         if (totalLength == 0)
             return "";
 
@@ -63,11 +62,11 @@
 
         for (int i = 0; i < totalLength; i += chunkSize)
         {
-            var chunk = await JS.InvokeAsync<string>("getBase64Chunk", i, Math.Min(i + chunkSize, totalLength));
+            var chunk = await Js.InvokeAsync<string>("getBase64Chunk", i, Math.Min(i + chunkSize, totalLength));
             sb.Append(chunk);
         }
 
-        await JS.InvokeVoidAsync("clearBase64Buffer");
+        await Js.InvokeVoidAsync("clearBase64Buffer");
         return sb.ToString();
     }
 

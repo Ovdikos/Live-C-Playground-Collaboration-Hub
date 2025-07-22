@@ -3,46 +3,48 @@
 @inject UserState UserState
 
 @using Application.DTOs
+@using Application.DTOs.SnippetsDtos
+@using Web.AuthService
 
 @code {
     [Parameter]
     public Guid Id { get; set; }
 
-    private SnippetDto? snippet;
-    private string? error;
-    private bool initialized = false;
-    private bool isLoaded = false;
+    private SnippetDto? _snippet;
+    private string? _error;
+    private bool _initialized = false;
+    private bool _isLoaded = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!initialized)
+        if (!_initialized)
         {
-            initialized = true;
+            _initialized = true;
             await UserState.InitializeAsync();
             try
             {
             
-                snippet = await Http.GetFromJsonAsync<SnippetDto>($"/api/snippets/{Id}");
-                if (snippet == null)
-                    error = "Snippet not found!";
+                _snippet = await Http.GetFromJsonAsync<SnippetDto>($"/api/snippets/{Id}");
+                if (_snippet == null)
+                    _error = "Snippet not found!";
             }
             catch
             {
-                error = "Failed to load snippet.";
+                _error = "Failed to load snippet.";
             }
 
-            isLoaded = true;
+            _isLoaded = true;
             StateHasChanged();
         }
         
     }
 }
 
-@if (error != null)
+@if (_error != null)
 {
-    <div class="alert alert-danger">@error</div>
+    <div class="alert alert-danger">@_error</div>
 }
-else if (snippet == null)
+else if (_snippet == null)
 {
     <p>Loading...</p>
 }
@@ -50,12 +52,12 @@ else
 {
     <div class="card mt-3">
         <div class="card-body">
-            <h2>@snippet.Title</h2>
-            <p>@snippet.Content</p>
-            <div><b>Owner:</b> @snippet.OwnerName</div>
-            <div><b>Created:</b> @snippet.CreatedAt.ToString("g")</div>
-            <div><b>Last updated:</b> @snippet.UpdatedAt.ToString("g")</div>
-            <div><b>Public:</b> @(snippet.IsPublic ? "Yes" : "No")</div>
+            <h2>@_snippet.Title</h2>
+            <p>@_snippet.Content</p>
+            <div><b>Owner:</b> @_snippet.OwnerName</div>
+            <div><b>Created:</b> @_snippet.CreatedAt.ToString("g")</div>
+            <div><b>Last updated:</b> @_snippet.UpdatedAt.ToString("g")</div>
+            <div><b>Public:</b> @(_snippet.IsPublic ? "Yes" : "No")</div>
         </div>
     </div>
 }

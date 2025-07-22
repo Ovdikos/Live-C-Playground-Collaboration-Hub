@@ -1,6 +1,6 @@
-﻿using Application.DTOs;
-using Web.AuthService;
+﻿using Application.DTOs.UserDtos;
 
+namespace Web.AuthService;
 
 public class UserState
 {

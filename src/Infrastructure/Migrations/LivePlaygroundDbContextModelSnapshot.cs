@@ -194,6 +194,9 @@ namespace Infrastructure.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
+                    b.HasIndex("Username")
+                        .IsUnique();
+
                     b.ToTable("Users");
                 });
 
@@ -210,7 +213,7 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.CollabParticipant", b =>
                 {
-                    b.HasOne("Core.Entities.CollabSession", "Session")
+                    b.HasOne("Core.Entities.CollabSession", "SessionDtos")
                         .WithMany("Participants")
                         .HasForeignKey("SessionId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -222,7 +225,7 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Session");
+                    b.Navigation("SessionDtos");
 
                     b.Navigation("User");
                 });
@@ -254,7 +257,7 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Core.Entities.CollabSession", "Session")
+                    b.HasOne("Core.Entities.CollabSession", "SessionDtos")
                         .WithMany("EditHistories")
                         .HasForeignKey("SessionId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -262,7 +265,7 @@ namespace Infrastructure.Migrations
 
                     b.Navigation("EditedByUser");
 
-                    b.Navigation("Session");
+                    b.Navigation("SessionDtos");
                 });
 
             modelBuilder.Entity("Core.Entities.CodeSnippet", b =>

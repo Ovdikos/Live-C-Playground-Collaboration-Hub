@@ -1,22 +1,25 @@
 ﻿@page "/sessions/create"
+@using Application.DTOs.SessionDtos
+@using Application.DTOs.SnippetsDtos
+@using Web.AuthService
 @inject HttpClient Http
 @inject UserState UserState
 @inject NavigationManager Nav
 
-<h3 class="fw-bold mb-4">Create New Session</h3>
+<h3 class="fw-bold mb-4">Create New SessionDtos</h3>
 
-<EditForm Model="session" OnValidSubmit="HandleCreate">
+<EditForm Model="_session" OnValidSubmit="HandleCreate">
     <DataAnnotationsValidator />
     <ValidationSummary />
     <div class="mb-3">
-        <label>Session Name</label>
-        <InputText class="form-control" @bind-Value="session.Name" />
+        <label>SessionDtos Name</label>
+        <InputText class="form-control" @bind-Value="_session.Name" />
     </div>
     <div class="mb-3">
         <label>For Snippet</label>
-        <InputSelect class="form-control" @bind-Value="session.CodeSnippetId">
+        <InputSelect class="form-control" @bind-Value="_session.CodeSnippetId">
             <option value="">-- Select snippet --</option>
-            @foreach (var s in snippets)
+            @foreach (var s in _snippets)
             {
                 <option value="@s.Id">@s.Title</option>
             }
@@ -24,7 +27,7 @@
     </div>
     <div class="mb-3">
         <label>Join Code</label>
-        <InputText class="form-control" @bind-Value="session.JoinCode" />
+        <InputText class="form-control" @bind-Value="_session.JoinCode" />
         <small class="form-text text-muted">
             This code will be required to join the session. Example: <b>abcd1234</b>
         </small>
@@ -32,23 +35,23 @@
     <button type="submit" class="btn btn-success w-100">Create</button>
 </EditForm>
 
-@if (!string.IsNullOrEmpty(error))
+@if (!string.IsNullOrEmpty(_error))
 {
-    <div class="alert alert-danger mt-3">@error</div>
+    <div class="alert alert-danger mt-3">@_error</div>
 }
 
 @code {
-    private CreateSessionCommand session = new();
-    private List<SnippetDto> snippets = new();
-    private string? error;
-    private bool initialized = false;
-    private bool isLoaded = false;
+    private readonly CreateSessionCommand _session = new();
+    private List<SnippetDto> _snippets = new();
+    private string? _error;
+    private bool _initialized = false;
+    private bool _isLoaded = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!initialized)
+        if (!_initialized)
         {
-            initialized = true;
+            _initialized = true;
             await UserState.InitializeAsync();
             
             if (!UserState.IsAuthenticated || UserState.User is null)
@@ -56,18 +59,18 @@
                 Nav.NavigateTo("/login");
                 return;
             }
-            snippets = await Http.GetFromJsonAsync<List<SnippetDto>>($"/api/snippets?ownerId={UserState.User.Id}");
-            session.OwnerId = UserState.User.Id;
+            _snippets = await Http.GetFromJsonAsync<List<SnippetDto>>($"/api/snippets?ownerId={UserState.User.Id}");
+            _session.OwnerId = UserState.User.Id;
 
-            isLoaded = true;
+            _isLoaded = true;
             StateHasChanged();
         }
     }
 
     private async Task HandleCreate()
     {
-        error = null;
-        var response = await Http.PostAsJsonAsync("/api/sessions", session);
+        _error = null;
+        var response = await Http.PostAsJsonAsync("/api/sessions", _session);
         if (response.IsSuccessStatusCode)
         {
             var result = await response.Content.ReadFromJsonAsync<CollabSessionDto>();
@@ -75,7 +78,7 @@
         }
         else
         {
-            error = "Failed to create session.";
+            _error = "Failed to create session.";
         }
     }
 
