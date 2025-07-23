@@ -7,7 +7,7 @@ using Core.Interfaces;
 using FluentAssertions;
 using Moq;
 
-namespace Tests.UnitTests;
+namespace Tests.UnitTests.AuthTests;
 
 public class RegisterUserTests
 {
