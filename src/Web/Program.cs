@@ -1,34 +1,26 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Application.DTOs;
 using Application.DTOs.LoginRegisterDtos;
 using Application.DTOs.SessionDtos;
 using Application.DTOs.SnippetsDtos;
 using Application.DTOs.UserDtos;
 using Application.Features.Admin.CleanupService;
-using Application.Features.Admin.Commands;
 using Application.Features.Admin.Commands.BlockUser;
 using Application.Features.Admin.Commands.DeleteCollabSession;
 using Application.Features.Admin.Commands.DeleteSnippet;
 using Application.Features.Admin.Commands.DeleteUser;
 using Application.Features.Admin.Commands.UpdateCollabSession;
 using Application.Features.Admin.Commands.UpdateSnippet;
-using Application.Features.Admin.Queries;
 using Application.Features.Admin.Queries.GetSnippetByTitle;
 using Application.Features.Admin.Queries.GetUserDetails;
 using Application.Features.Admin.Queries.GetUsers;
-using Application.Features.Auth.Commands;
 using Application.Features.Auth.Commands.RegisterUser;
-using Application.Features.Auth.Queries;
 using Application.Features.Auth.Queries.GetAllSessions;
 using Application.Features.Auth.Queries.GetAllSnippets;
 using Application.Features.Auth.Queries.LoginUser;
-using Application.Features.CodeSnippets.Commands;
 using Application.Features.CodeSnippets.Commands.CreateCodeSnippet;
 using Application.Features.CodeSnippets.Commands.DeleteCodeSnippet;
 using Application.Features.CodeSnippets.Commands.UpdateCodeSnippet;
-using Application.Features.CodeSnippets.Queries;
 using Application.Features.CodeSnippets.Queries.GetAllCodeSnippets;
 using Application.Features.CodeSnippets.Queries.GetCodeSnippetById;
 using Application.Features.CollabSessions.Commands.CreateCollabSession;
@@ -40,18 +32,14 @@ using Application.Mapper;
 using AutoMapper;
 using Core.Entities;
 using Core.Interfaces;
-using FluentValidation;
 using Infrastructure.DbContext;
 using Infrastructure.Repositories;
 using MediatR;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Web.AuthService;
-using Web.Components;
-using Web.Pages;
 using GetCollabSessionDetailsQuery = Application.Features.Admin.Queries.GetCollabSessionDetails.GetCollabSessionDetailsQuery;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -59,8 +47,6 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
 // Registering services
-// builder.JwtToken.AddRazorComponents()
-     // .AddInteractiveServerComponents();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
@@ -98,7 +84,6 @@ builder.Services.AddMediatR(cfg =>
 
 // Hosted Service
 builder.Services.AddHostedService<SessionDeactivationService>();
-
 
 
 
@@ -603,11 +588,6 @@ app.MapDelete("/api/admin/session/{name}", async (
 }).RequireAuthorization();
 
 
-
-
-
-// app.MapRazorComponents<App>()
-     // .AddInteractiveServerRenderMode();
 app.MapRazorPages();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");

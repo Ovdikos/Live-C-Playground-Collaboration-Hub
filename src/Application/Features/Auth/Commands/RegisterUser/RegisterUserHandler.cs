@@ -28,6 +28,9 @@ public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, UserDto>
         var dto = request.Dto;
         if (await _repo.ExistsByUsernameOrEmail(dto.Username, dto.Email))
             throw new Exception("User already exists!");
+        
+        if (string.IsNullOrWhiteSpace(dto.Username))
+            throw new ArgumentException("Username is required");
 
         if (string.IsNullOrWhiteSpace(dto.Password))
             throw new ArgumentException("Password is required");
