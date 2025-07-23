@@ -7,7 +7,7 @@
 @inject IJSRuntime Js
 
 @code {
-    [Parameter] public string Username { get; set; } = "";
+    [Parameter] public string Login { get; set; } = "";
 
     private UserDetailsDto? _user;
     private bool _isLoading = true;
@@ -30,7 +30,7 @@
 
         try
         {
-            _user = await Http.GetFromJsonAsync<UserDetailsDto>($"/api/admin/user/{Username}");
+            _user = await Http.GetFromJsonAsync<UserDetailsDto>($"/api/admin/user/{Login}");
             notFound = _user == null;
         }
         catch

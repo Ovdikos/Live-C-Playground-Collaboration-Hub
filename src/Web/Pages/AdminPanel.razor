@@ -25,7 +25,7 @@ else
         <div class="admin-tabs">
             <button class="admin-tab-btn @(_activeTab == "users" ? "active" : "")" @onclick="@(() => SetTab("users"))">Users</button>
             <button class="admin-tab-btn @(_activeTab == "snippets" ? "active" : "")" @onclick="@(() => SetTab("snippets"))">Snippets</button>
-            <button class="admin-tab-btn @(_activeTab == "sessions" ? "active" : "")" @onclick="@(() => SetTab("sessions"))">SessionDtoss</button>
+            <button class="admin-tab-btn @(_activeTab == "sessions" ? "active" : "")" @onclick="@(() => SetTab("sessions"))">Session</button>
             <button class="admin-tab-btn @(_activeTab == "stats" ? "active" : "")" @onclick="@(() => SetTab("stats"))">Stats</button>
         </div>
 
@@ -128,8 +128,8 @@ else
             {
                 <div>
                     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                        <h3 style="margin: 0;">SessionDtoss Management</h3>
-                        <button class="btn btn-primary" style="height: 2.2rem;" @onclick="ShowFindSessionModal">Find SessionDtos</button>
+                        <h3 style="margin: 0;">Session Management</h3>
+                        <button class="btn btn-primary" style="height: 2.2rem;" @onclick="ShowFindSessionModal">Find Session</button>
                     </div>
                     <div style="margin-bottom: 1rem;">
                         <input class="form-control" style="width:180px;display:inline;margin-right:8px;"

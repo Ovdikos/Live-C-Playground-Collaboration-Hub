@@ -6,7 +6,6 @@ using Core.Entities;
 using Core.Interfaces;
 using FluentAssertions;
 using Moq;
-using Xunit;
 
 namespace Tests.UnitTests;
 
