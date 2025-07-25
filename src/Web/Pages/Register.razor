@@ -105,7 +105,7 @@
         }
 
         var content = new MultipartFormDataContent();
-        content.Add(new StringContent(_register.Username), "Login");
+        content.Add(new StringContent(_register.Username), "Username");
         content.Add(new StringContent(_register.Password), "Password");
         content.Add(new StringContent(_register.Email), "Email");
 

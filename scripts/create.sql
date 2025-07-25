@@ -1,53 +1,69 @@
 ﻿CREATE TABLE Users (
-                       Id UNIQUEIDENTIFIER PRIMARY KEY,
-                       Username NVARCHAR(64) NOT NULL,
-                       Email NVARCHAR(128) NOT NULL UNIQUE,
-                       PasswordHash NVARCHAR(256) NOT NULL,
-                       CreatedAt DATETIME2 NOT NULL,
-                       AvatarUrl NVARCHAR(256),
-                       IsAdmin BIT NOT NULL DEFAULT 0,
-                       IsBlocked BIT NOT NULL DEFAULT 0
+                       Id            UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+                       Username      NVARCHAR(64)      NOT NULL UNIQUE,
+                       Email         NVARCHAR(128)     NOT NULL UNIQUE,
+                       PasswordHash  NVARCHAR(MAX)     NOT NULL,
+                       CreatedAt     DATETIME2         NOT NULL DEFAULT SYSUTCDATETIME(),
+                       AvatarFileName NVARCHAR(260)    NULL,
+                       IsAdmin       BIT               NOT NULL DEFAULT 0,
+                       IsBlocked     BIT               NOT NULL DEFAULT 0,
+                       BlockedByAdminEmail NVARCHAR(128) NULL
 );
 
 CREATE TABLE CodeSnippets (
-                              Id UNIQUEIDENTIFIER PRIMARY KEY,
-                              Title NVARCHAR(128) NOT NULL,
-                              Content NVARCHAR(MAX) NOT NULL,
-                              OwnerId UNIQUEIDENTIFIER NOT NULL,
-                              CreatedAt DATETIME2 NOT NULL,
-                              UpdatedAt DATETIME2,
-                              IsPublic BIT NOT NULL DEFAULT 0,
-                              CONSTRAINT FK_CodeSnippets_Users_OwnerId FOREIGN KEY (OwnerId) REFERENCES Users(Id) ON DELETE CASCADE
+                              Id           UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+                              Title        NVARCHAR(128)     NOT NULL,
+                              Content      NVARCHAR(MAX)     NOT NULL,
+                              OwnerId      UNIQUEIDENTIFIER  NOT NULL,
+                              CreatedAt    DATETIME2         NOT NULL DEFAULT SYSUTCDATETIME(),
+                              UpdatedAt    DATETIME2         NULL,
+                              IsPublic     BIT               NOT NULL DEFAULT 0,
+                              CONSTRAINT FK_CodeSnippets_Users FOREIGN KEY (OwnerId)
+                                  REFERENCES Users (Id)
+                                  ON DELETE CASCADE
 );
 
 CREATE TABLE CollabSessions (
-                                Id UNIQUEIDENTIFIER PRIMARY KEY,
-                                Name NVARCHAR(128) NOT NULL,
-                                OwnerId UNIQUEIDENTIFIER NOT NULL,
-                                CodeSnippetId UNIQUEIDENTIFIER NOT NULL,
-                                CreatedAt DATETIME2 NOT NULL,
-                                ExpiresAt DATETIME2,
-                                EditedAt DATETIME2,
-                                IsActive BIT NOT NULL DEFAULT 1,
-                                CONSTRAINT FK_CollabSessions_Users_OwnerId FOREIGN KEY (OwnerId) REFERENCES Users(Id) ON DELETE RESTRICT,
-                                CONSTRAINT FK_CollabSessions_CodeSnippets_CodeSnippetId FOREIGN KEY (CodeSnippetId) REFERENCES CodeSnippets(Id) ON DELETE CASCADE
+                                Id            UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+                                Name          NVARCHAR(128)     NOT NULL,
+                                OwnerId       UNIQUEIDENTIFIER  NOT NULL,
+                                CodeSnippetId UNIQUEIDENTIFIER  NOT NULL,
+                                CreatedAt     DATETIME2         NOT NULL DEFAULT SYSUTCDATETIME(),
+                                ExpiresAt     DATETIME2         NULL,
+                                EditedAt      DATETIME2         NULL,
+                                IsActive      BIT               NOT NULL DEFAULT 1,
+                                JoinCode      NVARCHAR(64)      NOT NULL,
+                                CONSTRAINT FK_CollabSessions_Owner FOREIGN KEY (OwnerId)
+                                    REFERENCES Users (Id)
+                                    ON DELETE NO ACTION,
+                                CONSTRAINT FK_CollabSessions_Snippet FOREIGN KEY (CodeSnippetId)
+                                    REFERENCES CodeSnippets (Id)
+                                    ON DELETE CASCADE
 );
 
-CREATE TABLE CollabParticipants (
-                                    Id UNIQUEIDENTIFIER PRIMARY KEY,
-                                    SessionId UNIQUEIDENTIFIER NOT NULL,
-                                    UserId UNIQUEIDENTIFIER NOT NULL,
-                                    JoinedAt DATETIME2 NOT NULL,
-                                    CONSTRAINT FK_CollabParticipants_CollabSessions_SessionId FOREIGN KEY (SessionId) REFERENCES CollabSessions(Id) ON DELETE CASCADE,
-                                    CONSTRAINT FK_CollabParticipants_Users_UserId FOREIGN KEY (UserId) REFERENCES Users(Id) ON DELETE RESTRICT
+CREATE TABLE ColladParticipants (
+                                    Id         UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+                                    SessionId  UNIQUEIDENTIFIER  NOT NULL,
+                                    UserId     UNIQUEIDENTIFIER  NOT NULL,
+                                    JoinedAt   DATETIME2         NOT NULL DEFAULT SYSUTCDATETIME(),
+                                    CONSTRAINT FK_Participants_Session FOREIGN KEY (SessionId)
+                                        REFERENCES CollabSessions (Id)
+                                        ON DELETE CASCADE,
+                                    CONSTRAINT FK_Participants_User FOREIGN KEY (UserId)
+                                        REFERENCES Users (Id)
+                                        ON DELETE NO ACTION
 );
 
 CREATE TABLE SessionEditHistories (
-                                      Id UNIQUEIDENTIFIER PRIMARY KEY,
-                                      SessionId UNIQUEIDENTIFIER NOT NULL,
-                                      EditedByUserId UNIQUEIDENTIFIER NOT NULL,
-                                      EditedAt DATETIME2 NOT NULL,
-                                      Changes NVARCHAR(MAX) NOT NULL,
-                                      CONSTRAINT FK_SessionEditHistories_CollabSessions_SessionId FOREIGN KEY (SessionId) REFERENCES CollabSessions(Id) ON DELETE RESTRICT,
-                                      CONSTRAINT FK_SessionEditHistories_Users_EditedByUserId FOREIGN KEY (EditedByUserId) REFERENCES Users(Id) ON DELETE RESTRICT
+                                      Id               UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+                                      SessionId        UNIQUEIDENTIFIER  NOT NULL,
+                                      EditedByUserId   UNIQUEIDENTIFIER  NOT NULL,
+                                      EditedAt         DATETIME2         NULL,
+                                      Changes          NVARCHAR(MAX)     NOT NULL,
+                                      CONSTRAINT FK_History_Session FOREIGN KEY (SessionId)
+                                          REFERENCES CollabSessions (Id)
+                                          ON DELETE CASCADE,
+                                      CONSTRAINT FK_History_EditedBy FOREIGN KEY (EditedByUserId)
+                                          REFERENCES Users (Id)
+                                          ON DELETE NO ACTION
 );

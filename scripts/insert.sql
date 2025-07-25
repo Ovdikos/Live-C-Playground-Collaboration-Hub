@@ -1,25 +1,21 @@
--- Users
-INSERT INTO Users (Id, Username, Email, PasswordHash, CreatedAt, AvatarUrl, IsAdmin, IsBlocked)
+-- Password is -> P@ssw0rd1
+INSERT INTO Users (Id, Username, Email, PasswordHash, CreatedAt, AvatarFileName, IsAdmin, IsBlocked, BlockedByAdminEmail)
 VALUES
-    (NEWID(), 'admin', 'admin@example.com', 'hashedpassword', GETUTCDATE(), NULL, 1, 0),
-    (NEWID(), 'testuser', 'test@example.com', 'hashedpassword', GETUTCDATE(), NULL, 0, 0);
+    ('00000000-0000-0000-0000-000000000001', 'admin', 'admin@example.com', '$2a$11$txwLo8g6Mzy1Bm9gOLSWSufOjnatugFiRF3m.EZr3Nu5.6ecjwf5G', SYSUTCDATETIME(), NULL, 1, 0, NULL),
+    ('00000000-0000-0000-0000-000000000002', 'user1', 'user1@example.com', '$2a$11$txwLo8g6Mzy1Bm9gOLSWSufOjnatugFiRF3m.EZr3Nu5.6ecjwf5G', SYSUTCDATETIME(), NULL, 0, 0, NULL);
 
--- CodeSnippets
 INSERT INTO CodeSnippets (Id, Title, Content, OwnerId, CreatedAt, UpdatedAt, IsPublic)
 VALUES
-    (NEWID(), 'Sample Snippet', 'Console.WriteLine("Hello, World!");', (SELECT TOP 1 Id FROM Users WHERE Username = 'admin'), GETUTCDATE(), NULL, 1);
+    ('00000000-0000-0000-0000-000000000011', 'HelloWorld', 'Console.WriteLine("Hello");', '00000000-0000-0000-0000-000000000002', SYSUTCDATETIME(), NULL, 1);
 
--- CollabSessions
-INSERT INTO CollabSessions (Id, Name, OwnerId, CodeSnippetId, CreatedAt, ExpiresAt, EditedAt, IsActive)
+INSERT INTO CollabSessions (Id, Name, OwnerId, CodeSnippetId, CreatedAt, ExpiresAt, EditedAt, IsActive, JoinCode)
 VALUES
-    (NEWID(), 'Session 1', (SELECT TOP 1 Id FROM Users WHERE Username = 'admin'), (SELECT TOP 1 Id FROM CodeSnippets), GETUTCDATE(), NULL, NULL, 1);
+    ('00000000-0000-0000-0000-000000000101', 'Session1', '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000011', SYSUTCDATETIME(), NULL, NULL, 1, 'join1234');
 
--- CollabParticipants
 INSERT INTO CollabParticipants (Id, SessionId, UserId, JoinedAt)
 VALUES
-    (NEWID(), (SELECT TOP 1 Id FROM CollabSessions), (SELECT TOP 1 Id FROM Users WHERE Username = 'testuser'), GETUTCDATE());
+    ('00000000-0000-0000-0000-000000000201', '00000000-0000-0000-0000-000000000101', '00000000-0000-0000-0000-000000000002', SYSUTCDATETIME());
 
--- SessionEditHistories
 INSERT INTO SessionEditHistories (Id, SessionId, EditedByUserId, EditedAt, Changes)
 VALUES
-    (NEWID(), (SELECT TOP 1 Id FROM CollabSessions), (SELECT TOP 1 Id FROM Users WHERE Username = 'admin'), GETUTCDATE(), 'Session created');
+    ('00000000-0000-0000-0000-000000000301', '00000000-0000-0000-0000-000000000101', '00000000-0000-0000-0000-000000000002', SYSUTCDATETIME(), 'Initial creation');
