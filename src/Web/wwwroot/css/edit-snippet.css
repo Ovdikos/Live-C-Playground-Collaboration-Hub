@@ -1,0 +1,105 @@
+﻿:root {
+    --color-bg: #fafafa;
+    --color-panel: #ffffff;
+    --color-primary: #1a1a2e;
+    --color-accent: #ffd700;
+    --color-text: #222222;
+    --color-border: #cccccc;
+    --color-error: #e74c3c;
+    --color-muted: #888888;
+    --radius: 8px;
+    --transition: 0.3s ease;
+}
+
+.edit-snippet-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin-bottom: 1rem;
+}
+
+.snippet-edit-error {
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    background-color: #fdecea;
+    color: var(--color-error);
+    border-radius: var(--radius);
+}
+
+.snippet-edit-loading {
+    text-align: center;
+    font-size: 1.25rem;
+    padding: 2rem 0;
+    color: var(--color-muted);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.25rem;
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.form-check-input {
+    margin-right: 0.5rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+}
+
+.form-check-label {
+    font-size: 0.95rem;
+    color: var(--color-text);
+    cursor: pointer;
+}
+
+.form-control {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(26, 26, 46, 0.15);
+}
+
+.btn-success {
+    background-color: var(--color-primary);
+    color: var(--color-panel);
+    border: none;
+    padding: 0.75rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+    width: 100%;
+    transition: background-color var(--transition), transform var(--transition), box-shadow var(--transition);
+}
+
+.btn-success:hover {
+    background-color: var(--color-accent);
+    color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 600px) {
+    .edit-snippet-title {
+        font-size: 1.5rem;
+    }
+    .form-control {
+        padding: 0.65rem 0.9rem;
+    }
+    .btn-success {
+        padding: 0.65rem;
+        font-size: 0.95rem;
+    }
+}

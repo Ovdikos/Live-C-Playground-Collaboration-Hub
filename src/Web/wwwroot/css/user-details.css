@@ -1,0 +1,193 @@
+﻿:root {
+    --color-bg: #fafafa;
+    --color-panel: #ffffff;
+    --color-primary: #1a1a2e;
+    --color-accent: #ffd700;
+    --color-text: #222222;
+    --color-muted: #888888;
+    --color-border: #dddddd;
+    --color-error: #e74c3c;
+    --radius: 8px;
+    --transition: 0.3s ease;
+}
+
+.user-details-loading,
+.user-details-notfound {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 1rem;
+    text-align: center;
+    color: var(--color-muted);
+}
+
+.user-details-notfound {
+    background-color: #fff4e5;
+    border-radius: var(--radius);
+}
+
+.user-details-page {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: var(--color-panel);
+    border-radius: var(--radius);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.user-details-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.user-details-btn-block,
+.user-details-btn-delete {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: var(--radius);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color var(--transition), transform var(--transition);
+}
+
+.user-details-btn-block {
+    background-color: var(--color-accent);
+    color: var(--color-primary);
+}
+
+.user-details-btn-block:hover {
+    background-color: #e6c200;
+    transform: translateY(-1px);
+}
+
+.user-details-btn-delete {
+    background-color: var(--color-error);
+    color: var(--color-panel);
+}
+
+.user-details-btn-delete:hover {
+    background-color: #c0392b;
+    transform: translateY(-1px);
+}
+
+.user-details-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.user-details-info p {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+}
+
+.user-details-hint {
+    position: relative;
+    cursor: pointer;
+}
+
+.user-details-id,
+.user-details-password {
+    font-family: monospace;
+}
+
+.user-details-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    top: 1.5rem;
+    left: 0;
+    background-color: var(--color-panel);
+    color: var(--color-text);
+    padding: 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: opacity var(--transition);
+    white-space: nowrap;
+    z-index: 10;
+}
+
+.user-details-hint:hover .user-details-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+.user-details-blocked-msg {
+    margin-top: 1rem;
+    color: var(--color-error);
+    font-weight: 500;
+}
+
+.user-details-block-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+.user-details-snippet-list,
+.user-details-session-list,
+.user-details-ownedsession-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.user-details-snippet-item,
+.user-details-session-item,
+.user-details-ownedsession-item {
+    background-color: var(--color-panel);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.user-details-snippet-content {
+    display: inline-block;
+    background-color: #f0f0f0;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius);
+    font-family: monospace;
+}
+
+.user-details-snippets-empty,
+.user-details-sessions-empty,
+.user-details-owned-sessions-empty {
+    text-align: center;
+    color: var(--color-muted);
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 600px) {
+    .user-details-page {
+        padding: 1rem;
+        margin: 1rem;
+    }
+    .user-details-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .user-details-btn-block,
+    .user-details-btn-delete {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    .user-details-title {
+        font-size: 1.5rem;
+    }
+    .user-details-block-title {
+        font-size: 1.1rem;
+    }
+    .user-details-snippet-item,
+    .user-details-session-item,
+    .user-details-ownedsession-item {
+        padding: 0.75rem;
+    }
+}

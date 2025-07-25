@@ -4,7 +4,6 @@
 @inject HttpClient Http
 @inject UserState UserState
 
-
 @code {
     [Parameter] public Guid Id { get; set; }
     private CollabSessionDto? _session;
@@ -14,12 +13,10 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-
         if (!_initialized)
         {
             _initialized = true;
             await UserState.InitializeAsync();
-            
             try
             {
                 _session = await Http.GetFromJsonAsync<CollabSessionDto>($"/api/sessions/{Id}");
@@ -28,48 +25,44 @@
             {
                 _error = "Failed to load session.";
             }
-
             _isLoaded = true;
             StateHasChanged();
-
         }
     }
 }
 
 @if (_error != null)
 {
-    <div class="alert alert-danger">@_error</div>
+    <div class="session-details-error">@_error</div>
 }
 else if (_session == null)
 {
-    <p>Loading...</p>
+    <p class="session-details-loading">Loading...</p>
 }
 else
 {
-    <div class="card mt-4">
-        <div class="card-body">
-            <h2>@_session.Name</h2>
-            <div><b>Owner:</b> @_session.OwnerName</div>
-            <div><b>Created:</b> @_session.CreatedAt.ToString("g")</div>
-            <div><b>Active:</b> @(_session.IsActive ? "Yes" : "No")</div>
-            <div><b>Snippet:</b> @_session.CodeSnippetTitle</div>
-            <div>
-                <div>
-                    <b>ExpiresAt:</b>
-                    @(_session.ExpiresAt != DateTime.MinValue
-                        ? _session.ExpiresAt.ToString("g")
-                        : "—")
-                </div>
+    <div class="session-details-card">
+        <div class="session-details-main">
+            <h2 class="session-details-title">@_session.Name</h2>
+            <div class="session-details-row"><b>Owner:</b> @_session.OwnerName</div>
+            <div class="session-details-row"><b>Created:</b> @_session.CreatedAt.ToString("g")</div>
+            <div class="session-details-row"><b>Active:</b> @(_session.IsActive ? "Yes" : "No")</div>
+            <div class="session-details-row"><b>Snippet:</b> @_session.CodeSnippetTitle</div>
+            <div class="session-details-row">
+                <b>Expires:</b>
+                @(_session.ExpiresAt != DateTime.MinValue
+                    ? _session.ExpiresAt.ToString("g")
+                    : "—")
             </div>
             @if (!string.IsNullOrWhiteSpace(_session.SnippetContent))
             {
-                <pre class="bg-light rounded p-2 mt-2" style="max-width:100%; overflow-x:auto;">
+                <pre class="session-details-snippet-content">
                     @_session.SnippetContent
                 </pre>
             }
 
-            <h5 class="mt-4">Participants</h5>
-            <ul>
+            <h5 class="session-details-subtitle">Participants</h5>
+            <ul class="session-details-participants">
                 @foreach (var p in _session.Participants)
                 {
                     <li>@p.Username (@p.Email) - joined @p.JoinedAt.ToString("g")</li>
@@ -78,17 +71,17 @@ else
 
             @if (_session.EditHistories != null && _session.EditHistories.Any())
             {
-                <h5 class="mt-4">Change History</h5>
-                <ul>
+                <h5 class="session-details-subtitle">Change History</h5>
+                <ul class="session-details-history">
                     @foreach (var h in _session.EditHistories)
                     {
                         <li>
                             <strong>@h.EditedByUsername</strong>
-                            <span class="ms-2 text-muted">@h.EditedAt.ToLocalTime().ToString("g")</span>
-                            <div class="small">@h.Changes</div>
+                            <span class="session-details-history-date">@h.EditedAt.ToLocalTime().ToString("g")</span>
+                            <div class="session-details-history-comment">@h.Changes</div>
                         </li>
                     }
-                </ul>   
+                </ul>
             }
         </div>
     </div>

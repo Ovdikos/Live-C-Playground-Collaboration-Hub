@@ -6,27 +6,27 @@
 @inject NavigationManager Nav
 @inject UserState UserState
 
-<EditForm Model="_login" OnValidSubmit="HandleLogin">
+<EditForm class="login-form-card" Model="_login" OnValidSubmit="HandleLogin">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    <div class="mb-3">
-        <label>Login</label>
-        <InputText class="form-control" @bind-Value="_login.Login" />
+    <div class="login-form-group">
+        <label class="login-label">Login</label>
+        <InputText class="login-input" @bind-Value="_login.Login" />
     </div>
-    <div class="mb-3">
-        <label>Password</label>
-        <InputText class="form-control" type="password" @bind-Value="_login.Password" />
+    <div class="login-form-group">
+        <label class="login-label">Password</label>
+        <InputText class="login-input" type="password" @bind-Value="_login.Password" />
     </div>
-    <button class="btn btn-primary w-100" type="submit">Login</button>
-    <div class="text-center mt-3">
-        <a href="/register">Don't have an account? Register</a>
+    <button class="login-btn-primary" type="submit">Login</button>
+    <div class="login-form-footer">
+        <a class="login-register-link" href="/register">Don't have an account? Register</a>
     </div>
 </EditForm>
 
 @if (!string.IsNullOrEmpty(_error))
 {
-    <div class="alert alert-danger">@_error</div>
+    <div class="login-alert-error">@_error</div>
 }
 
 @code {

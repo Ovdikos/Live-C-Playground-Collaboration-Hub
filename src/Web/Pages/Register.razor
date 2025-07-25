@@ -7,32 +7,41 @@
 @inject UserState UserState
 @inject IJSRuntime Js
 
-<EditForm Model="_register" OnValidSubmit="HandleRegister" FormName="registerForm">
+<EditForm class="register-form-card" Model="_register" OnValidSubmit="HandleRegister" FormName="registerForm">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    <div class="mb-3">
-        <label for="username">Login</label>
-        <InputText id="username" class="form-control" @bind-Value="_register.Username" />
+    <div class="register-form-group">
+        <label for="username" class="register-label">Login</label>
+        <InputText id="username" class="register-input" @bind-Value="_register.Username" />
     </div>
-    <div class="mb-3">
-        <label for="password">Password</label>
-        <InputText id="password" type="password" class="form-control" @bind-Value="_register.Password" />
+    <div class="register-form-group">
+        <label for="password" class="register-label">Password</label>
+        <InputText id="password" type="password" class="register-input" @bind-Value="_register.Password" />
     </div>
-    <div class="mb-3">
-        <label for="email">Email</label>
-        <InputText id="email" type="email" class="form-control" @bind-Value="_register.Email" />
+    <div class="register-form-group">
+        <label for="email" class="register-label">Email</label>
+        <InputText id="email" type="email" class="register-input" @bind-Value="_register.Email" />
     </div>
-    <div class="mb-3">
-        <label>Avatar (optional)</label>
-        <InputFile @ref="_fileInputRef" OnChange="OnInputFileChange" accept="image/png, image/jpeg" />
+    <div class="register-form-group">
+        <label class="register-label">Avatar (optional)</label>
+        <div class="register-avatar-upload">
+            <label class="register-avatar-file-label">
+                Choose Avatar
+                <InputFile @ref="_fileInputRef" OnChange="OnInputFileChange" class="register-avatar-file-input" accept="image/png, image/jpeg" />
+            </label>
+            @if (!string.IsNullOrEmpty(_avatarFileName))
+            {
+                <span class="register-avatar-selected-file">@_avatarFileName</span>
+            }
+        </div>
         @if (!string.IsNullOrEmpty(_avatarPreview))
         {
-            <img src="@_avatarPreview" style="max-width:150px;max-height:150px;border-radius:50%;margin-top:8px;" />
+            <img src="@_avatarPreview" class="register-avatar-preview" alt="Avatar Preview" />
         }
     </div>
-    <button class="btn btn-success w-100" type="submit">Register</button>
-    <div class="text-center mt-3">
+    <button class="register-btn-submit" type="submit">Register</button>
+    <div class="register-form-bottom-link">
         <a href="/login">Already have an account? Login</a>
     </div>
 </EditForm>
@@ -44,7 +53,7 @@
 
 @if (!string.IsNullOrEmpty(_error))
 {
-    <div class="alert alert-danger">@_error</div>
+    <div class="register-error-msg">@_error</div>
 }
 
 @code {
@@ -56,11 +65,13 @@
     private string? _avatarBase64;
     private bool _showCropper = false;
     private string? _cropperImageUrl;
-    private InputFile _fileInputRef; 
+    private InputFile _fileInputRef;
+    private string? _avatarFileName;
 
     private async Task OnInputFileChange(InputFileChangeEventArgs e)
     {
         _avatarFile = e.File;
+        _avatarFileName = _avatarFile?.Name;
         var buffer = new byte[_avatarFile.Size];
         await _avatarFile.OpenReadStream(5 * 1024 * 1024).ReadAsync(buffer);
         _cropperImageUrl = $"data:{_avatarFile.ContentType};base64,{Convert.ToBase64String(buffer)}";

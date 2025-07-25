@@ -8,48 +8,48 @@
 @using Application.DTOs.SnippetsDtos
 @using Web.AuthService
 
-<h3>Edit Snippet</h3>
+<h3 class="admin-snippet-edit-title">Edit Snippet</h3>
 
 @if (_isLoading)
 {
-    <div>Loading...</div>
+    <div class="admin-snippet-edit-loading">Loading...</div>
 }
 else if (_notFound)
 {
-    <div class="alert alert-warning">Snippet not found.</div>
+    <div class="admin-snippet-edit-notfound alert alert-warning">Snippet not found.</div>
 }
 else if (_snippet != null)
 {
-    <EditForm Model="_snippet" OnValidSubmit="Save">
+    <EditForm Model="_snippet" OnValidSubmit="Save" class="admin-snippet-edit-form">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
-        <div class="mb-3">
+        <div class="form-group mb-3">
             <label class="form-label">Title:</label>
-            <InputText @bind-Value="_snippet.Title" class="form-control" />
+            <InputText @bind-Value="_snippet.Title" class="form-control admin-snippet-edit-title input" />
         </div>
-        <div class="mb-3">
+        <div class="form-group mb-3">
             <label class="form-label">Content:</label>
-            <InputTextArea @bind-Value="_snippet.Content" class="form-control" rows="6" />
+            <InputTextArea @bind-Value="_snippet.Content" class="form-control admin-snippet-edit-content input" rows="6" />
         </div>
-        <div class="mb-3">
+        <div class="form-group mb-3">
             <label class="form-label">Is Public:</label>
-            <InputCheckbox @bind-Value="_snippet.IsPublic" />
+            <InputCheckbox @bind-Value="_snippet.IsPublic" class="admin-snippet-edit-checkbox" />
         </div>
-        <div class="mb-3">
+        <div class="form-group mb-3">
             <label class="form-label">Created At:</label>
             <input value="@(_snippet.CreatedAt.ToString("yyyy-MM-dd HH:mm"))" class="form-control" disabled />
         </div>
-        <div class="mb-3">
+        <div class="form-group mb-3">
             <label class="form-label">Updated At:</label>
             <input value="@(_snippet.UpdatedAt.ToString("yyyy-MM-dd HH:mm") ?? "—")" class="form-control" disabled />
         </div>
-        <div class="mb-3">
+        <div class="form-group mb-3">
             <label class="form-label">Owner:</label>
             <input value="@_snippet.OwnerName" class="form-control" disabled />
         </div>
         <button class="btn btn-success" type="submit" disabled="@_isSaving">Save</button>
-        <button class="btn btn-danger ms-3" type="button" @onclick="ShowDeleteConfirm" disabled="@_isSaving">Delete</button>
+        <button class="btn btn-danger" type="button" @onclick="ShowDeleteConfirm" disabled="@_isSaving">Delete</button>
         @if (_saved)
         {
             <span class="text-success ms-3">Saved!</span>
@@ -63,8 +63,8 @@ else if (_snippet != null)
 
 @if (_showDeleteConfirm)
 {
-    <div class="modal-backdrop" style="z-index:2000;">
-        <div class="modal-dialog">
+    <div class="modal-backdrop admin-snippet-edit-modal-backdrop" style="z-index:2000;">
+        <div class="modal-dialog admin-snippet-edit-modal-dialog">
             <h5>Delete this snippet?</h5>
             <div style="margin-bottom:10px;">Are you sure you want to delete "<b>@_snippet?.Title</b>"?</div>
             <div style="display:flex;justify-content:flex-end;gap:12px;">
@@ -159,7 +159,6 @@ else if (_snippet != null)
             {
                 var content = await response.Content.ReadAsStringAsync();
                 _error = $"Failed to delete snippet. Server: {content}";
-
             }
         }
         catch

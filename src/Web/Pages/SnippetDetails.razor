@@ -23,7 +23,6 @@
             await UserState.InitializeAsync();
             try
             {
-            
                 _snippet = await Http.GetFromJsonAsync<SnippetDto>($"/api/snippets/{Id}");
                 if (_snippet == null)
                     _error = "Snippet not found!";
@@ -36,28 +35,31 @@
             _isLoaded = true;
             StateHasChanged();
         }
-        
     }
 }
 
 @if (_error != null)
 {
-    <div class="alert alert-danger">@_error</div>
+    <div class="snippet-details-error alert alert-danger">@_error</div>
 }
 else if (_snippet == null)
 {
-    <p>Loading...</p>
+    <div class="snippet-details-loading">Loading...</div>
 }
 else
 {
-    <div class="card mt-3">
-        <div class="card-body">
-            <h2>@_snippet.Title</h2>
-            <p>@_snippet.Content</p>
-            <div><b>Owner:</b> @_snippet.OwnerName</div>
-            <div><b>Created:</b> @_snippet.CreatedAt.ToString("g")</div>
-            <div><b>Last updated:</b> @_snippet.UpdatedAt.ToString("g")</div>
-            <div><b>Public:</b> @(_snippet.IsPublic ? "Yes" : "No")</div>
+    <div class="snippet-details-card card mt-3">
+        <div class="snippet-details-body card-body">
+            <h2 class="snippet-details-title">@_snippet.Title</h2>
+            <div class="snippet-details-content mb-3">
+                <pre class="snippet-details-pre bg-light rounded p-2" style="max-width:100%; overflow-x:auto;">@_snippet.Content</pre>
+            </div>
+            <div class="snippet-details-meta">
+                <div><b>Owner:</b> @_snippet.OwnerName</div>
+                <div><b>Created:</b> @_snippet.CreatedAt.ToString("g")</div>
+                <div><b>Last updated:</b> @_snippet.UpdatedAt.ToString("g")</div>
+                <div><b>Public:</b> @(_snippet.IsPublic ? "Yes" : "No")</div>
+            </div>
         </div>
     </div>
 }

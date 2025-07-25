@@ -1,0 +1,182 @@
+﻿:root {
+    --color-bg: #f5f5f5;
+    --color-primary: #1a1a2e;
+    --color-secondary: #ffffff;
+    --color-accent: #ffd700;
+    --color-text: #222222;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow-x: hidden;
+}
+
+.home-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.home-loading span {
+    font-size: 1.5rem;
+    letter-spacing: 0.1rem;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.userbar {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    align-items: center;
+    background-color: var(--color-secondary);
+    border-radius: 40px;
+    padding: 0.5rem 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+
+.userbar:hover {
+    transform: translateY(-2px);
+}
+
+.userbar-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--color-accent);
+    object-fit: cover;
+    margin-right: 0.75rem;
+}
+
+.userbar-username {
+    font-weight: 600;
+    cursor: pointer;
+    position: relative;
+    color: var(--color-primary);
+}
+
+.userbar-username::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: var(--color-accent);
+    transition: width 0.3s ease;
+}
+
+.userbar-username:hover::after {
+    width: 100%;
+}
+
+.userbar-admin-btn,
+.userbar-logout-btn {
+    margin-left: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    border: none;
+    background-color: var(--color-primary);
+    color: var(--color-secondary);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.userbar-admin-btn:hover,
+.userbar-logout-btn:hover {
+    background-color: var(--color-accent);
+    color: var(--color-primary);
+    transform: translateY(-1px);
+}
+
+.home-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+    padding: 0 1rem;
+}
+
+.home-welcome-title {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.home-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.home-action-btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.home-action-btn.btn-primary {
+    background-color: var(--color-primary);
+    color: var(--color-secondary);
+    border: 2px solid var(--color-primary);
+}
+
+.home-action-btn.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    background-color: var(--color-secondary);
+    color: var(--color-primary);
+}
+
+.home-action-btn.btn-outline-primary {
+    background-color: transparent;
+    color: var(--color-primary);
+    border: 2px solid var(--color-primary);
+}
+
+.home-action-btn.btn-outline-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    background-color: var(--color-primary);
+    color: var(--color-secondary);
+}
+
+@media (max-width: 768px) {
+    .userbar {
+        top: 0.5rem;
+        right: 0.5rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .home-welcome-title {
+        font-size: 2rem;
+    }
+
+    .home-actions {
+        gap: 0.75rem;
+    }
+
+    .home-action-btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+    }
+}

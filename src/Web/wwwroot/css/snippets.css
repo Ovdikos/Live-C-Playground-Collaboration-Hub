@@ -1,0 +1,218 @@
+﻿:root {
+    --color-bg: #fafafa;
+    --color-panel: #ffffff;
+    --color-primary: #1a1a2e;
+    --color-accent: #ffd700;
+    --color-secondary: #ffd700;
+    --color-text: #222222;
+    --color-muted: #888888;
+    --color-error: #e74c3c;
+    --radius: 8px;
+    --transition: 0.3s ease;
+}
+
+.snippets-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    background-color: var(--color-bg);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.snippets-auth-alert {
+    background-color: #fff4e5;
+    color: #8a6d3b;
+    padding: 1rem;
+    border-radius: var(--radius);
+    text-align: center;
+}
+
+.snippets-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.snippets-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--color-primary);
+}
+
+.snippets-create-btn {
+    background-color: var(--color-primary);
+    color: var(--color-panel);
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: var(--radius);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color var(--transition), transform var(--transition);
+}
+
+.snippets-create-btn:hover {
+    background-color: var(--color-accent);
+    transform: translateY(-2px);
+}
+
+.snippets-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--color-muted);
+    margin: 2rem 0;
+}
+
+.snippets-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #ddd;
+    border-top: 4px solid var(--color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.snippets-loading-text {
+    margin-top: 0.75rem;
+    font-style: italic;
+    color: var(--color-muted);
+}
+
+.snippets-empty {
+    text-align: center;
+    color: var(--color-muted);
+    margin: 2rem 0;
+}
+
+.snippets-empty a {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color var(--transition);
+}
+
+.snippets-empty a:hover {
+    color: var(--color-accent);
+    text-decoration: underline;
+}
+
+.snippets-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+}
+
+.snippets-list-item {
+    display: flex;
+}
+
+.snippet-card {
+    background-color: var(--color-panel);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.snippet-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.1);
+}
+
+.snippet-card-body {
+    padding: 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.snippet-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin-bottom: 0.5rem;
+}
+
+.snippet-card-content {
+    font-size: 0.9rem;
+    color: var(--color-text);
+    flex: 1;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.snippet-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.snippet-card-date {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+}
+
+.snippet-card-btns {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.snippet-btn-view,
+.snippet-btn-edit,
+.snippet-btn-delete {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background-color var(--transition), transform var(--transition);
+}
+
+.snippet-btn-view {
+    background-color: transparent;
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+}
+
+.snippet-btn-view:hover {
+    background-color: var(--color-primary);
+    color: var(--color-panel);
+    transform: translateY(-1px);
+}
+
+.snippet-btn-edit {
+    background-color: var(--color-accent);
+    color: var(--color-primary);
+}
+
+.snippet-btn-edit:hover {
+    background-color: #e6c200;
+    transform: translateY(-1px);
+}
+
+.snippet-btn-delete {
+    background-color: var(--color-error);
+    color: var(--color-panel);
+}
+
+.snippet-btn-delete:hover {
+    background-color: #c0392b;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 600px) {
+    .snippets-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    .snippets-list {
+        grid-template-columns: 1fr;
+    }
+}

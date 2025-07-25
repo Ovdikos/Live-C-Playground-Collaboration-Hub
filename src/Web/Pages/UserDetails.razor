@@ -11,7 +11,7 @@
 
     private UserDetailsDto? _user;
     private bool _isLoading = true;
-    private bool notFound = false;
+    private bool _notFound = false;
 
     private bool _showPassword = false;
     private bool _showId = false;
@@ -31,11 +31,11 @@
         try
         {
             _user = await Http.GetFromJsonAsync<UserDetailsDto>($"/api/admin/user/{Login}");
-            notFound = _user == null;
+            _notFound = _user == null;
         }
         catch
         {
-            notFound = true;
+            _notFound = true;
         }
         _isLoading = false;
     }
@@ -68,113 +68,121 @@
 
 @if (_isLoading)
 {
-    <div>Loading user data...</div>
+    <div class="user-details-loading">Loading user data...</div>
 }
-else if (notFound)
+else if (_notFound)
 {
-    <div>User not found.</div>
+    <div class="user-details-notfound">User not found.</div>
 }
 else
 {
-    <div class="user-details-container">
-        <div style="display:flex; justify-content:flex-end; gap:18px;">
-            <button class="btn btn-warning" @onclick="ToggleBlockUser">
-                @(_user!.IsBlocked ? "Unblock" : "BlockUser")
+    <div class="user-details-page">
+        <div class="user-details-actions">
+            <button class="user-details-btn-block btn" @onclick="ToggleBlockUser">
+                @(_user!.IsBlocked ? "Unblock" : "Block User")
             </button>
-            <button class="btn btn-danger" @onclick="DeleteUser">
+            <button class="user-details-btn-delete btn" @onclick="DeleteUser">
                 Delete
             </button>
         </div>
-        <h2><b>User: @_user!.Username</b></h2>
-        <p>
-            <span class="hint-on-hover">
-                <b>ID:</b> <span class="masked">@_user.Id.ToString()</span>
-                <span class="tooltip">@_user.Id.ToString()</span>
-            </span>
-        </p>
-        <p>Email: @_user.Email</p>
-        <p>Created At: @_user.CreatedAt.ToString("yyyy-MM-dd HH:mm")</p>
-        <p>Is Admin: @(_user.IsAdmin ? "Yes" : "No")</p>
-        <p>
-            <span class="hint-on-hover">
-                <b>Password:</b> <span class="masked">•••••••••••</span>
-                <span class="tooltip">@_user.PasswordHash</span>
-            </span>
-        </p>
-        @if (_user.IsBlocked && !string.IsNullOrEmpty(_user.BlockedByAdminEmail))
-        {
-            <p style="color:#d00;font-weight:600;">
-                Account is blocked. Contact admin: @_user.BlockedByAdminEmail
+        <h2 class="user-details-title"><b>User: @_user!.Username</b></h2>
+        <div class="user-details-info">
+            <p>
+                <span class="user-details-hint">
+                    <b>ID:</b> <span class="user-details-id">@_user.Id.ToString()</span>
+                    <span class="user-details-tooltip">@_user.Id.ToString()</span>
+                </span>
             </p>
-        }
+            <p>Email: @_user.Email</p>
+            <p>Created At: @_user.CreatedAt.ToString("yyyy-MM-dd HH:mm")</p>
+            <p>Is Admin: @(_user.IsAdmin ? "Yes" : "No")</p>
+            <p>
+                <span class="user-details-hint">
+                    <b>Password:</b> <span class="user-details-password">•••••••••••</span>
+                    <span class="user-details-tooltip">@_user.PasswordHash</span>
+                </span>
+            </p>
+            @if (_user.IsBlocked && !string.IsNullOrEmpty(_user.BlockedByAdminEmail))
+            {
+                <p class="user-details-blocked-msg">
+                    Account is blocked. Contact admin: @_user.BlockedByAdminEmail
+                </p>
+            }
+        </div>
 
-        <h4>Snippets</h4>
-        @if (_user.CodeSnippets.Any())
-        {
-            <ul>
-                @foreach (var snip in _user.CodeSnippets)
-                {
-                    <li>
-                        <b>@snip.Title</b> (@snip.Id)<br />
-                        Content: <span style="font-family:monospace">@snip.Content</span><br />
-                        Created: @snip.CreatedAt.ToString("yyyy-MM-dd HH:mm")<br />
-                        Updated: @(snip.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")<br />
-                        Public: @(snip.IsPublic ? "Yes" : "No")
-                    </li>
-                }
-            </ul>
-        }
-        else
-        {
-            <div>No snippets found.</div>
-        }
+        <div class="user-details-snippets">
+            <h4 class="user-details-block-title">User's Snippets</h4>
+            @if (_user.CodeSnippets.Any())
+            {
+                <ul class="user-details-snippet-list">
+                    @foreach (var snip in _user.CodeSnippets)
+                    {
+                        <li class="user-details-snippet-item">
+                            <b>@snip.Title</b> (@snip.Id)<br />
+                            Content: <span class="user-details-snippet-content">@snip.Content</span><br />
+                            Created: @snip.CreatedAt.ToString("yyyy-MM-dd HH:mm")<br />
+                            Updated: @(snip.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")<br />
+                            Public: @(snip.IsPublic ? "Yes" : "No")
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <div class="user-details-snippets-empty">No snippets found.</div>
+            }
+        </div>
 
-        <h4>Sessions</h4>
-        @if (_user.CollabSessions.Any())
-        {
-            <ul>
-                @foreach (var sess in _user.CollabSessions)
-                {
-                    <li>
-                        <b>@sess.Name</b> (@sess.Id)<br />
-                        Snippet: @sess.CodeSnippetTitle<br />
-                        Created: @sess.CreatedAt.ToString("yyyy-MM-dd HH:mm")<br />
-                        Expires: @(sess.ExpiresAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")<br />
-                        Edited: @(sess.EditedAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")<br />
-                        Active: @(sess.IsActive ? "Yes" : "No")<br />
-                        Join Code: @sess.JoinCode<br />
-                        Owner: @sess.Owner
-                    </li>
-                }
-            </ul>
-        }
-        else
-        {
-            <div>No sessions found.</div>
-        }
+        <div class="user-details-sessions">
+            <h4 class="user-details-block-title">User's Sessions</h4>
+            @if (_user.CollabSessions.Any())
+            {
+                <ul class="user-details-session-list">
+                    @foreach (var sess in _user.CollabSessions)
+                    {
+                        <li class="user-details-session-item">
+                            <b>@sess.Name</b> (@sess.Id)<br />
+                            Snippet: @sess.CodeSnippetTitle<br />
+                            Created: @sess.CreatedAt.ToString("yyyy-MM-dd HH:mm")<br />
+                            Expires: @(sess.ExpiresAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")<br />
+                            Edited: @(sess.EditedAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")<br />
+                            Active: @(sess.IsActive ? "Yes" : "No")<br />
+                            Join Code: @sess.JoinCode<br />
+                            Owner: @sess.Owner
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <div class="user-details-sessions-empty">No sessions found.</div>
+            }
+        </div>
 
-        <h4>Owned Sessions</h4>
-        @if (_user.OwnedSessions.Any())
-        {
-            <ul>
-                @foreach (var sess in _user.OwnedSessions)
-                {
-                    <li>
-                        <b>@sess.Name</b> (@sess.Id)<br />
-                        Snippet: @sess.CodeSnippetTitle<br />
-                        Created: @sess.CreatedAt.ToString("yyyy-MM-dd HH:mm")<br />
-                        Expires: @(sess.ExpiresAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")<br />
-                        Edited: @(sess.EditedAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")<br />
-                        Active: @(sess.IsActive ? "Yes" : "No")<br />
-                        Join Code: @sess.JoinCode<br />
-                        Owner: @sess.Owner
-                    </li>
-                }
-            </ul>
-        }
-        else
-        {
-            <div>No owned sessions found.</div>
-        }
+        <div class="user-details-ownedsessions">
+            <h4 class="user-details-block-title">Owned Sessions</h4>
+            @if (_user.OwnedSessions.Any())
+            {
+                <ul class="user-details-ownedsession-list">
+                    @foreach (var sess in _user.OwnedSessions)
+                    {
+                        <li class="user-details-ownedsession-item">
+                            <b>@sess.Name</b> (@sess.Id)<br />
+                            Snippet: @sess.CodeSnippetTitle<br />
+                            Created: @sess.CreatedAt.ToString("yyyy-MM-dd HH:mm")<br />
+                            Expires: @(sess.ExpiresAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")<br />
+                            Edited: @(sess.EditedAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")<br />
+                            Active: @(sess.IsActive ? "Yes" : "No")<br />
+                            Join Code: @sess.JoinCode<br />
+                            Owner: @sess.Owner
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <div class="user-details-owned-sessions-empty">No owned sessions found.</div>
+            }
+        </div>
     </div>
 }

@@ -6,39 +6,41 @@
 @inject UserState UserState
 @inject NavigationManager Nav
 
-<h3 class="fw-bold mb-4">Create New SessionDtos</h3>
+<div class="create-session-page">
+    <h3 class="create-session-title">Create New Session</h3>
 
-<EditForm Model="_session" OnValidSubmit="HandleCreate">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-    <div class="mb-3">
-        <label>SessionDtos Name</label>
-        <InputText class="form-control" @bind-Value="_session.Name" />
-    </div>
-    <div class="mb-3">
-        <label>For Snippet</label>
-        <InputSelect class="form-control" @bind-Value="_session.CodeSnippetId">
-            <option value="">-- Select snippet --</option>
-            @foreach (var s in _snippets)
-            {
-                <option value="@s.Id">@s.Title</option>
-            }
-        </InputSelect>
-    </div>
-    <div class="mb-3">
-        <label>Join Code</label>
-        <InputText class="form-control" @bind-Value="_session.JoinCode" />
-        <small class="form-text text-muted">
-            This code will be required to join the session. Example: <b>abcd1234</b>
-        </small>
-    </div>
-    <button type="submit" class="btn btn-success w-100">Create</button>
-</EditForm>
+    <EditForm Model="_session" OnValidSubmit="HandleCreate">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="create-session-field">
+            <label class="create-session-label">Session Name</label>
+            <InputText class="create-session-input" @bind-Value="_session.Name" />
+        </div>
+        <div class="create-session-field">
+            <label class="create-session-label">For Snippet</label>
+            <InputSelect class="create-session-input" @bind-Value="_session.CodeSnippetId">
+                <option value="">-- Select snippet --</option>
+                @foreach (var s in _snippets)
+                {
+                    <option value="@s.Id">@s.Title</option>
+                }
+            </InputSelect>
+        </div>
+        <div class="create-session-field">
+            <label class="create-session-label">Join Code</label>
+            <InputText class="create-session-input" @bind-Value="_session.JoinCode" />
+            <small class="create-session-hint">
+                This code will be required to join the session. Example: <b>abcd1234</b>
+            </small>
+        </div>
+        <button type="submit" class="create-session-btn">Create</button>
+    </EditForm>
 
-@if (!string.IsNullOrEmpty(_error))
-{
-    <div class="alert alert-danger mt-3">@_error</div>
-}
+    @if (!string.IsNullOrEmpty(_error))
+    {
+        <div class="create-session-error">@_error</div>
+    }
+</div>
 
 @code {
     private readonly CreateSessionCommand _session = new();
@@ -53,7 +55,7 @@
         {
             _initialized = true;
             await UserState.InitializeAsync();
-            
+
             if (!UserState.IsAuthenticated || UserState.User is null)
             {
                 Nav.NavigateTo("/login");
@@ -90,6 +92,6 @@
         public Guid CodeSnippetId { get; set; }
         public Guid OwnerId { get; set; }
         [Required]
-        public string JoinCode { get; set; } = ""; 
+        public string JoinCode { get; set; } = "";
     }
 }

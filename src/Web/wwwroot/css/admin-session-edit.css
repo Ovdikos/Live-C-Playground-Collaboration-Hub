@@ -1,0 +1,215 @@
+﻿:root {
+    --color-bg: #fafafa;
+    --color-panel: #ffffff;
+    --color-primary: #1a1a2e;
+    --color-accent: #ffd700;
+    --color-text: #222222;
+    --color-border: #cccccc;
+    --color-muted: #888888;
+    --color-error: #e74c3c;
+    --color-success: #27ae60;
+    --radius: 8px;
+    --transition: 0.3s ease;
+}
+
+.admin-session-edit-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.admin-session-edit-loading,
+.admin-session-edit-notfound {
+    text-align: center;
+    font-size: 1.25rem;
+    color: var(--color-muted);
+    margin: 2rem 0;
+}
+
+.admin-session-edit-notfound.alert-warning {
+    background-color: #fff4e5;
+    color: #8a6d3b;
+    padding: 1rem;
+    border-radius: var(--radius);
+}
+
+.admin-session-edit-form {
+    max-width: 700px;
+    margin: 0 auto 2rem;
+    background-color: var(--color-panel);
+    padding: 2rem;
+    border-radius: var(--radius);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.admin-session-edit-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-session-edit-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    font-size: 1rem;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(26, 26, 46, 0.15);
+}
+
+.admin-session-edit-help {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+    margin-top: 0.25rem;
+}
+
+.admin-session-edit-participants {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0 0;
+}
+
+.admin-session-edit-participants li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.admin-session-edit-participants li:last-child {
+    border-bottom: none;
+}
+
+.admin-session-edit-save-btn,
+.admin-session-edit-delete-btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    transition: background-color var(--transition), transform var(--transition), box-shadow var(--transition);
+}
+
+.admin-session-edit-save-btn {
+    background-color: var(--color-success);
+    color: var(--color-panel);
+}
+
+.admin-session-edit-save-btn:hover {
+    background-color: #1e8449;
+    transform: translateY(-1px);
+}
+
+.admin-session-edit-delete-btn {
+    background-color: #c0392b;
+    color: var(--color-panel);
+}
+
+.admin-session-edit-delete-btn:hover {
+    background-color: #922b21;
+    transform: translateY(-1px);
+}
+
+.admin-session-edit-saved.text-success {
+    color: var(--color-success);
+    font-weight: 500;
+    margin-left: 1rem;
+}
+
+.admin-session-edit-error.alert-danger {
+    background-color: #fdecea;
+    color: var(--color-error);
+    padding: 1rem;
+    border-radius: var(--radius);
+    margin-top: 1rem;
+}
+
+/* Modal reuse */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.modal-dialog {
+    background-color: var(--color-panel);
+    border-radius: var(--radius);
+    padding: 2rem;
+    max-width: 480px;
+    width: 90%;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.2);
+    transform: translateY(-20px);
+    animation: slideIn var(--transition) forwards;
+}
+
+@keyframes slideIn {
+    to { transform: translateY(0); }
+}
+
+.modal-dialog h5 {
+    margin: 0 0 1rem 0;
+    font-size: 1.25rem;
+    color: var(--color-primary);
+}
+
+.modal-dialog p {
+    margin: 0 0 1.5rem 0;
+    color: var(--color-text);
+}
+
+.modal-dialog .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    border-radius: var(--radius);
+    transition: background-color var(--transition), transform var(--transition);
+}
+
+.modal-dialog .btn-secondary {
+    background-color: var(--color-border);
+    color: var(--color-text);
+}
+
+.modal-dialog .btn-secondary:hover {
+    background-color: var(--color-primary);
+    color: var(--color-panel);
+    transform: translateY(-1px);
+}
+
+.modal-dialog .btn-danger {
+    background-color: #c0392b;
+    color: var(--color-panel);
+}
+
+.modal-dialog .btn-danger:hover {
+    background-color: #922b21;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 600px) {
+    .admin-session-edit-form {
+        padding: 1.5rem;
+    }
+    .modal-dialog {
+        padding: 1.5rem;
+    }
+}

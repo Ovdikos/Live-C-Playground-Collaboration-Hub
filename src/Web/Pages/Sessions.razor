@@ -5,81 +5,85 @@
 @using Application.DTOs.SessionDtos
 @using Web.AuthService
 
-<div class="container mt-5">
-    <div class="d-flex gap-2 mb-3">
-        <a class="btn btn-primary" href="/sessions/create">Create New SessionDtos</a>
-        <button class="btn btn-success" @onclick="ShowJoinModal">Join SessionDtos</button>
+<div class="sessions-page-container">
+    <div class="sessions-toolbar">
+        <a class="btn btn-primary sessions-create-btn" href="/sessions/create">Create New Session</a>
+        <button class="btn btn-success sessions-join-btn" @onclick="ShowJoinModal">Join Session</button>
     </div>
 
-    <h3 class="fw-bold mb-3">SessionDtoss I'm Participating In</h3>
+    <h3 class="sessions-section-title">Sessions I'm Participating In</h3>
     @if (_sessionsParticipating == null)
     {
-        <div>Loading...</div>
+        <div class="sessions-loading">Loading...</div>
     }
     else if (_sessionsParticipating.Count == 0)
     {
-        <div class="alert alert-info">You are not participating in any sessions.</div>
+        <div class="sessions-empty alert alert-info">You are not participating in any sessions.</div>
     }
     else
     {
-        <ul class="list-group mb-5">
+        <ul class="sessions-list list-group mb-5">
             @foreach (var s in _sessionsParticipating)
             {
-                <li class="list-group-item d-flex flex-column align-items-start mb-2 rounded shadow-sm">
-                    <div class="d-flex justify-content-between align-items-center w-100">
-                        <span class="fw-semibold">@s.Name</span>
+                <li class="sessions-list-item list-group-item d-flex flex-column align-items-start mb-2 rounded shadow-sm">
+                    <div class="sessions-list-header d-flex justify-content-between align-items-center w-100">
+                        <span class="sessions-list-name fw-semibold">@s.Name</span>
                         @if (s.OwnerName == UserState.User?.Username)
                         {
-                            <button class="btn btn-outline-danger btn-sm" @onclick="() => ShowDeleteModal(s.Id)">
+                            <button class="btn btn-outline-danger btn-sm sessions-list-delete-btn" @onclick="() => ShowDeleteModal(s.Id)">
                                 Delete
                             </button>
                         }
                         else
                         {
-                            <button class="btn btn-outline-danger btn-sm" @onclick="() => ShowLeaveModal(s.Id)">
+                            <button class="btn btn-outline-danger btn-sm sessions-list-leave-btn" @onclick="() => ShowLeaveModal(s.Id)">
                                 Leave
                             </button>
                         }
                     </div>
-                    <div class="text-muted small">Snippet: @s.CodeSnippetTitle</div>
-                    <div class="text-muted small">Participants: @(s.Participants != null ? s.Participants.Count : 0)</div>
-                    <a class="btn btn-outline-primary btn-sm mt-2" href="/sessions/@s.Id">
-                        <i class="bi bi-eye"></i> Details
-                    </a>
-                    <a class="btn btn-warning btn-sm ms-2" href="/sessions/@s.Id/edit">
-                        <i class="bi bi-pencil"></i> Edit
-                    </a>
+                    <div class="sessions-list-snippet text-muted small">Snippet: @s.CodeSnippetTitle</div>
+                    <div class="sessions-list-participants text-muted small">Participants: @(s.Participants != null ? s.Participants.Count : 0)</div>
+                    <div class="sessions-list-actions">
+                        <a class="btn btn-outline-primary btn-sm mt-2 sessions-list-details-btn" href="/sessions/@s.Id">
+                            <i class="bi bi-eye"></i> Details
+                        </a>
+                        <a class="btn btn-warning btn-sm ms-2 sessions-list-edit-btn" href="/sessions/@s.Id/edit">
+                            <i class="bi bi-pencil"></i> Edit
+                        </a>
+                    </div>
                 </li>
             }
         </ul>
     }
 
-    <h3 class="fw-bold mb-3">SessionDtoss I Own</h3>
+    <h3 class="sessions-section-title">Sessions I Own</h3>
     @if (_sessionsOwned == null)
     {
-        <div>Loading...</div>
+        <div class="sessions-loading">Loading...</div>
     }
     else if (_sessionsOwned.Count == 0)
     {
-        <div class="alert alert-info">You haven't created any sessions yet.</div>
+        <div class="sessions-empty alert alert-info">You haven't created any sessions yet.</div>
     }
     else
     {
-        <ul class="list-group">
+        <ul class="sessions-list list-group">
             @foreach (var s in _sessionsOwned)
             {
-                <li class="list-group-item d-flex flex-column align-items-start mb-2 rounded shadow-sm">
-                    <div class="d-flex justify-content-between align-items-center w-100">
-                        <span class="fw-semibold">@s.Name</span>
-                        <button class="btn btn-outline-danger btn-sm" @onclick="() => ShowDeleteModal(s.Id)">
+                <li class="sessions-list-item list-group-item d-flex flex-column align-items-start mb-2 rounded shadow-sm">
+                    <div class="sessions-list-header d-flex justify-content-between align-items-center w-100">
+                        <span class="sessions-list-name fw-semibold">@s.Name</span>
+                        <button class="btn btn-outline-danger btn-sm sessions-list-delete-btn" @onclick="() => ShowDeleteModal(s.Id)">
                             Delete
                         </button>
                     </div>
-                    <div class="text-muted small">Snippet: @s.CodeSnippetTitle</div>
-                    <div class="text-muted small">Participants: @(s.Participants != null ? s.Participants.Count : 0)</div>
-                    <a class="btn btn-outline-primary btn-sm mt-2" href="/sessions/@s.Id">
-                        <i class="bi bi-eye"></i> Details
-                    </a>
+                    <div class="sessions-list-snippet text-muted small">Snippet: @s.CodeSnippetTitle</div>
+                    <div class="sessions-list-participants text-muted small">Participants: @(s.Participants != null ? s.Participants.Count : 0)</div>
+                    <div class="sessions-list-actions">
+                        <a class="btn btn-outline-primary btn-sm mt-2 sessions-list-details-btn" href="/sessions/@s.Id">
+                            <i class="bi bi-eye"></i> Details
+                        </a>
+                    </div>
                 </li>
             }
         </ul>
@@ -88,24 +92,24 @@
 
 @if (_showJoinModal)
 {
-    <div class="modal-backdrop fade show" style="z-index:1050"></div>
-    <div class="modal d-block" tabindex="-1" style="z-index:1055">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Join SessionDtos</h5>
+    <div class="sessions-modal-backdrop modal-backdrop fade show"></div>
+    <div class="sessions-modal modal d-block" tabindex="-1">
+        <div class="sessions-modal-dialog modal-dialog modal-dialog-centered">
+            <div class="sessions-modal-content modal-content">
+                <div class="sessions-modal-header modal-header">
+                    <h5 class="modal-title">Join Session</h5>
                     <button type="button" class="btn-close" @onclick="HideJoinModal"></button>
                 </div>
-                <div class="modal-body">
-                    <InputText class="form-control" placeholder="Enter join code..." @bind-Value="_joinCode" />
+                <div class="sessions-modal-body modal-body">
+                    <InputText class="form-control sessions-modal-input" placeholder="Enter join code..." @bind-Value="_joinCode" />
                     @if (!string.IsNullOrEmpty(_joinError))
                     {
-                        <div class="alert alert-danger mt-2">@_joinError</div>
+                        <div class="sessions-modal-error alert alert-danger mt-2">@_joinError</div>
                     }
                 </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="HideJoinModal">Cancel</button>
-                    <button class="btn btn-success" @onclick="JoinSessionAsync">Join</button>
+                <div class="sessions-modal-footer modal-footer">
+                    <button class="btn btn-secondary sessions-modal-cancel-btn" @onclick="HideJoinModal">Cancel</button>
+                    <button class="btn btn-success sessions-modal-join-btn" @onclick="JoinSessionAsync">Join</button>
                 </div>
             </div>
         </div>
@@ -114,19 +118,19 @@
 
 @if (_showLeaveModal)
 {
-    <div class="modal-backdrop fade show" style="z-index:1050"></div>
-    <div class="modal d-block" tabindex="-1" style="z-index:1055">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
+    <div class="sessions-modal-backdrop modal-backdrop fade show"></div>
+    <div class="sessions-modal modal d-block" tabindex="-1">
+        <div class="sessions-modal-dialog modal-dialog modal-dialog-centered">
+            <div class="sessions-modal-content modal-content">
+                <div class="sessions-modal-header modal-header">
                     <h5 class="modal-title">Are you sure?</h5>
                 </div>
-                <div class="modal-body">
+                <div class="sessions-modal-body modal-body">
                     <p>Do you really want to leave this session?</p>
                 </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="HideLeaveModal">No</button>
-                    <button class="btn btn-danger" @onclick="LeaveSessionAsync">Yes, Leave</button>
+                <div class="sessions-modal-footer modal-footer">
+                    <button class="btn btn-secondary sessions-modal-cancel-btn" @onclick="HideLeaveModal">No</button>
+                    <button class="btn btn-danger sessions-modal-leave-btn" @onclick="LeaveSessionAsync">Yes, Leave</button>
                 </div>
             </div>
         </div>
@@ -135,19 +139,19 @@
 
 @if (_showDeleteModal)
 {
-    <div class="modal-backdrop fade show"></div>
-    <div class="modal d-block" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
+    <div class="sessions-modal-backdrop modal-backdrop fade show"></div>
+    <div class="sessions-modal modal d-block" tabindex="-1">
+        <div class="sessions-modal-dialog modal-dialog modal-dialog-centered">
+            <div class="sessions-modal-content modal-content">
+                <div class="sessions-modal-header modal-header">
                     <h5 class="modal-title">Delete session?</h5>
                 </div>
-                <div class="modal-body">
+                <div class="sessions-modal-body modal-body">
                     <p>Are you sure you want to permanently delete this session? This action cannot be undone.</p>
                 </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="HideDeleteModal">No</button>
-                    <button class="btn btn-danger" @onclick="DeleteSessionAsync">Yes, Delete</button>
+                <div class="sessions-modal-footer modal-footer">
+                    <button class="btn btn-secondary sessions-modal-cancel-btn" @onclick="HideDeleteModal">No</button>
+                    <button class="btn btn-danger sessions-modal-delete-btn" @onclick="DeleteSessionAsync">Yes, Delete</button>
                 </div>
             </div>
         </div>

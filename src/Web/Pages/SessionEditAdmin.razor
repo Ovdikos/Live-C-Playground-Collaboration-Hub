@@ -6,54 +6,54 @@
 @using Application.DTOs.SessionDtos
 @using Web.AuthService
 
-<h3>Edit SessionDtos</h3>
+<h3 class="admin-session-edit-title">Edit Session</h3>
 
 @if (_isLoading)
 {
-    <div>Loading...</div>
+    <div class="admin-session-edit-loading">Loading...</div>
 }
 else if (_notFound)
 {
-    <div class="alert alert-warning">SessionDtos not found.</div>
+    <div class="admin-session-edit-notfound alert alert-warning">Session not found.</div>
 }
 else if (_session != null)
 {
-    <EditForm Model="_session" OnValidSubmit="Save">
+    <EditForm Model="_session" OnValidSubmit="Save" class="admin-session-edit-form">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
-        <div class="mb-3">
-            <label class="form-label">Name:</label>
+        <div class="admin-session-edit-field">
+            <label class="admin-session-edit-label">Name:</label>
             <InputText @bind-Value="_session.Name" class="form-control" />
         </div>
-        <div class="mb-3">
-            <label class="form-label">Expires At:</label>
+        <div class="admin-session-edit-field">
+            <label class="admin-session-edit-label">Expires At:</label>
             <InputDate @bind-Value="_session.ExpiresAt" class="form-control" />
-            <span class="form-text">(optional, if set, session auto-deletes)</span>
+            <span class="admin-session-edit-help">(optional, if set, session auto-deletes)</span>
         </div>
-        <div class="mb-3">
-            <label class="form-label">Is Active:</label>
+        <div class="admin-session-edit-field">
+            <label class="admin-session-edit-label">Is Active:</label>
             <InputCheckbox @bind-Value="_session.IsActive" />
         </div>
-        <div class="mb-3">
-            <label class="form-label">Owner:</label>
+        <div class="admin-session-edit-field">
+            <label class="admin-session-edit-label">Owner:</label>
             <input value="@_session.OwnerName" class="form-control" disabled />
         </div>
-        <div class="mb-3">
-            <label class="form-label">Created At:</label>
+        <div class="admin-session-edit-field">
+            <label class="admin-session-edit-label">Created At:</label>
             <input value="@_session.CreatedAt.ToString("yyyy-MM-dd HH:mm")" class="form-control" disabled />
         </div>
-        <div class="mb-3">
-            <label class="form-label">Snippet Title:</label>
+        <div class="admin-session-edit-field">
+            <label class="admin-session-edit-label">Snippet Title:</label>
             <input value="@_session.CodeSnippetTitle" class="form-control" disabled />
         </div>
-        <div class="mb-3">
-            <label class="form-label">Join Code:</label>
+        <div class="admin-session-edit-field">
+            <label class="admin-session-edit-label">Join Code:</label>
             <InputText @bind-Value="_session.JoinCode" class="form-control" />
         </div>
-        <div class="mb-3">
-            <label class="form-label">Participants:</label>
-            <ul>
+        <div class="admin-session-edit-field">
+            <label class="admin-session-edit-label">Participants:</label>
+            <ul class="admin-session-edit-participants">
                 @if (_session.Participants != null)
                 {
                     @foreach (var p in _session.Participants)
@@ -67,15 +67,15 @@ else if (_session != null)
                 }
             </ul>
         </div>
-        <button class="btn btn-success" type="submit" disabled="@_isSaving">Save</button>
-        <button class="btn btn-danger ms-2" type="button" @onclick="ShowDeleteModal" disabled="@_isSaving">Delete</button>
+        <button class="btn btn-success admin-session-edit-save-btn" type="submit" disabled="@_isSaving">Save</button>
+        <button class="btn btn-danger admin-session-edit-delete-btn" type="button" @onclick="ShowDeleteModal" disabled="@_isSaving">Delete</button>
         @if (_saved)
         {
-            <span class="text-success ms-3">Saved!</span>
+            <span class="admin-session-edit-saved text-success ms-3">Saved!</span>
         }
         @if (!string.IsNullOrEmpty(_error))
         {
-            <div class="alert alert-danger mt-2">@_error</div>
+            <div class="admin-session-edit-error alert alert-danger mt-2">@_error</div>
         }
     </EditForm>
 }

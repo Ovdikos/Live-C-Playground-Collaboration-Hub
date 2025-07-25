@@ -1,0 +1,100 @@
+﻿:root {
+    --color-bg: #fafafa;
+    --color-panel: #ffffff;
+    --color-primary: #1a1a2e;
+    --color-accent: #ffd700;
+    --color-text: #222222;
+    --color-error: #e74c3c;
+}
+
+.create-session-page {
+    max-width: 480px;
+    margin: 4rem auto;
+    padding: 2rem;
+    background-color: var(--color-panel);
+    border-radius: 12px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.create-session-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin-bottom: 1.5rem;
+    text-align: center;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.create-session-field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.25rem;
+}
+
+.create-session-label {
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--color-text);
+}
+
+.create-session-input {
+    padding: 0.65rem 1rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.create-session-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(26, 26, 46, 0.15);
+}
+
+.create-session-hint {
+    font-size: 0.85rem;
+    color: var(--color-text);
+    margin-top: 0.25rem;
+}
+
+.create-session-btn {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-panel);
+    background-color: var(--color-primary);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.create-session-btn:hover {
+    background-color: var(--color-accent);
+    color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.create-session-error {
+    margin-top: 1rem;
+    color: var(--color-error);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+@media (max-width: 600px) {
+    .create-session-page {
+        margin: 2rem 1rem;
+        padding: 1.5rem;
+    }
+    .create-session-title {
+        font-size: 1.5rem;
+    }
+}

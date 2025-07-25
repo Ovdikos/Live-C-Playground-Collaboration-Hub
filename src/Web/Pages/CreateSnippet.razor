@@ -5,30 +5,33 @@
 @inject UserState UserState
 @inject NavigationManager Nav
 
-<h3 class="fw-bold mb-4">Create New Snippet</h3>
+<div class="create-snippet-page">
+    <h3 class="create-snippet-title">Create New Snippet</h3>
 
-<EditForm Model="_snippet" OnValidSubmit="HandleCreate">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-    <div class="mb-3">
-        <label>Title</label>
-        <InputText class="form-control" @bind-Value="_snippet.Title" />
-    </div>
-    <div class="mb-3">
-        <label>Content</label>
-        <InputTextArea class="form-control" @bind-Value="_snippet.Content" Rows="7"/>
-    </div>
-    <div class="mb-3 form-check">
-        <InputCheckbox class="form-check-input" @bind-Value="_snippet.IsPublic" />
-        <label class="form-check-label">Make public</label>
-    </div>
-    <button type="submit" class="btn btn-success w-100">Create</button>
-</EditForm>
+    <EditForm Model="_snippet" OnValidSubmit="HandleCreate">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-@if (!string.IsNullOrEmpty(_error))
-{
-    <div class="alert alert-danger mt-3">@_error</div>
-}
+        <div class="create-snippet-field">
+            <label class="create-snippet-label">Title</label>
+            <InputText class="create-snippet-input" @bind-Value="_snippet.Title" />
+        </div>
+        <div class="create-snippet-field">
+            <label class="create-snippet-label">Content</label>
+            <InputTextArea class="create-snippet-input" @bind-Value="_snippet.Content" Rows="7"/>
+        </div>
+        <div class="create-snippet-checkbox-field">
+            <InputCheckbox class="create-snippet-checkbox" @bind-Value="_snippet.IsPublic" />
+            <label class="create-snippet-checkbox-label">Make public</label>
+        </div>
+        <button type="submit" class="create-snippet-btn">Create</button>
+    </EditForm>
+
+    @if (!string.IsNullOrEmpty(_error))
+    {
+        <div class="create-snippet-error">@_error</div>
+    }
+</div>
 
 @code {
     private readonly CreateCodeSnippetCommand _snippet = new();

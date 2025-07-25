@@ -19,22 +19,20 @@ else if (UserState.User?.IsAdmin != true)
 }
 else
 {
-    <div class="admin-panel-container">
-        <h1 class="admin-title">Admin Panel</h1>
-
+    <div class="admin-panel">
         <div class="admin-tabs">
-            <button class="admin-tab-btn @(_activeTab == "users" ? "active" : "")" @onclick="@(() => SetTab("users"))">Users</button>
-            <button class="admin-tab-btn @(_activeTab == "snippets" ? "active" : "")" @onclick="@(() => SetTab("snippets"))">Snippets</button>
-            <button class="admin-tab-btn @(_activeTab == "sessions" ? "active" : "")" @onclick="@(() => SetTab("sessions"))">Session</button>
-            <button class="admin-tab-btn @(_activeTab == "stats" ? "active" : "")" @onclick="@(() => SetTab("stats"))">Stats</button>
+            <button class="admin-tab @(_activeTab == "users" ? "active" : "")" @onclick="@(() => SetTab("users"))">Users</button>
+            <button class="admin-tab @(_activeTab == "snippets" ? "active" : "")" @onclick="@(() => SetTab("snippets"))">Snippets</button>
+            <button class="admin-tab @(_activeTab == "sessions" ? "active" : "")" @onclick="@(() => SetTab("sessions"))">Sessions</button>
+            <button class="admin-tab @(_activeTab == "stats" ? "active" : "")" @onclick="@(() => SetTab("stats"))">Stats</button>
         </div>
 
-        <div class="admin-content">
+        <div class="admin-panel-content">
             @if (_activeTab == "users")
             {
-                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                    <h3 style="margin: 0;">Users List</h3>
-                    <button class="btn btn-primary" style="height: 2.2rem;" @onclick="ShowFindUserModal">Find User</button>
+                <div class="admin-section-header">
+                    <h3 class="admin-section-title">Users List</h3>
+                    <button class="admin-btn admin-btn-primary" @onclick="ShowFindUserModal">Find User</button>
                 </div>
                 @if (_users == null)
                 {
@@ -46,7 +44,7 @@ else
                 }
                 else
                 {
-                    <table class="table">
+                    <table class="admin-table">
                         <thead>
                         <tr>
                             <th @onclick="@(() => SortBy("id"))" style="cursor:pointer;">ID @SortIcon("id")</th>
@@ -74,15 +72,15 @@ else
             else if (_activeTab == "snippets")
             {
                 <div>
-                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                        <h3 style="margin: 0;">Snippets Management</h3>
-                        <button class="btn btn-primary" style="height: 2.2rem;" @onclick="ShowFindSnippetModal">Find Snippet</button>
+                    <div class="admin-section-header">
+                        <h3 class="admin-section-title">Snippets Management</h3>
+                        <button class="admin-btn admin-btn-primary" @onclick="ShowFindSnippetModal">Find Snippet</button>
                     </div>
-                    <div style="margin-bottom: 1rem;">
+                    <div class="admin-snippet-filter">
                         <span>Filter: </span>
-                        <button class="btn btn-secondary btn-sm" @onclick="@(() => SetSnippetsFilter(null))">All</button>
-                        <button class="btn btn-success btn-sm" @onclick="@(() => SetSnippetsFilter(true))">Public</button>
-                        <button class="btn btn-warning btn-sm" @onclick="@(() => SetSnippetsFilter(false))">Private</button>
+                        <button class="admin-btn admin-btn-secondary admin-btn-sm @(_filterIsPublic == null ? "active" : "")" @onclick="@(() => SetSnippetsFilter(null))">All</button>
+                        <button class="admin-btn admin-btn-success admin-btn-sm @(_filterIsPublic == true ? "active" : "")" @onclick="@(() => SetSnippetsFilter(true))">Public</button>
+                        <button class="admin-btn admin-btn-warning admin-btn-sm @(_filterIsPublic == false ? "active" : "")" @onclick="@(() => SetSnippetsFilter(false))">Private</button>
                     </div>
                     @if (_snippetsLoading)
                     {
@@ -94,7 +92,7 @@ else
                     }
                     else
                     {
-                        <table class="table">
+                        <table class="admin-table">
                             <thead>
                             <tr>
                                 <th>Title</th>
@@ -115,7 +113,7 @@ else
                                     <td>@s.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
                                     <td>@(s.UpdatedAt.ToString("yyyy-MM-dd HH:mm") ?? "—")</td>
                                     <td>
-                                        <pre style="max-width:350px; overflow-x:auto; background:#f8f9fa; border-radius:6px; padding:8px 10px;">@s.Content</pre>
+                                        <pre class="admin-snippet-content">@s.Content</pre>
                                     </td>
                                 </tr>
                             }
@@ -127,22 +125,22 @@ else
             else if (_activeTab == "sessions")
             {
                 <div>
-                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                        <h3 style="margin: 0;">Session Management</h3>
-                        <button class="btn btn-primary" style="height: 2.2rem;" @onclick="ShowFindSessionModal">Find Session</button>
+                    <div class="admin-section-header">
+                        <h3 class="admin-section-title">Session Management</h3>
+                        <button class="admin-btn admin-btn-primary" @onclick="ShowFindSessionModal">Find Session</button>
                     </div>
-                    <div style="margin-bottom: 1rem;">
-                        <input class="form-control" style="width:180px;display:inline;margin-right:8px;"
+                    <div class="admin-session-filter">
+                        <input class="admin-form-control" style="width:180px;display:inline;margin-right:8px;"
                                @bind="_sessionSearch" placeholder="Search..." />
-                        <select class="form-control" style="width:120px;display:inline;margin-right:8px;"
+                        <select class="admin-form-control" style="width:120px;display:inline;margin-right:8px;"
                                 @bind="_sessionIsActive">
                             <option value="">All</option>
                             <option value="true">Active</option>
                             <option value="false">Inactive</option>
                         </select>
-                        <input class="form-control" style="width:160px;display:inline;margin-right:8px;"
+                        <input class="admin-form-control" style="width:160px;display:inline;margin-right:8px;"
                                type="number" min="0" @bind="_minParticipants" placeholder="Min participants" />
-                        <button class="btn btn-primary" @onclick="LoadSessions">Filter</button>
+                        <button class="admin-btn admin-btn-primary" @onclick="LoadSessions">Filter</button>
                     </div>
 
                     @if (_isLoadingSessions)
@@ -155,7 +153,7 @@ else
                     }
                     else
                     {
-                        <table class="table">
+                        <table class="admin-table">
                             <thead>
                             <tr>
                                 <th>Name</th>
@@ -205,15 +203,15 @@ else
 {
     <div class="modal-backdrop">
         <div class="modal-dialog">
-            <h5 style="margin-bottom:12px;">Find User</h5>
-            <input class="form-control" @bind="_findUserName" placeholder="Enter username..." autofocus  @onkeydown="OnFindUserKeyDown" />
-            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;">
-                <button class="btn btn-secondary" @onclick="CloseFindUserModal">Cancel</button>
-                <button class="btn btn-primary" @onclick="FindUser">Find</button>
+            <h5 class="modal-title">Find User</h5>
+            <input class="admin-form-control" @bind="_findUserName" placeholder="Enter username..." autofocus  @onkeydown="OnFindUserKeyDown" />
+            <div class="modal-actions">
+                <button class="admin-btn admin-btn-secondary" @onclick="CloseFindUserModal">Cancel</button>
+                <button class="admin-btn admin-btn-primary" @onclick="FindUser">Find</button>
             </div>
             @if (!string.IsNullOrEmpty(_findUserError))
             {
-                <div style="color:#d00;margin-top:10px;">@_findUserError</div>
+                <div class="modal-error">@_findUserError</div>
             }
         </div>
     </div>
@@ -222,15 +220,15 @@ else
 {
     <div class="modal-backdrop">
         <div class="modal-dialog">
-            <h5 style="margin-bottom:12px;">Find Snippet</h5>
-            <input class="form-control" @bind="_findSnippetTitle" placeholder="Enter snippet title..." autofocus @onkeydown="OnFindSnippetKeyDown" />
-            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;">
-                <button class="btn btn-secondary" @onclick="CloseFindSnippetModal">Cancel</button>
-                <button class="btn btn-primary" @onclick="FindSnippet">Find</button>
+            <h5 class="modal-title">Find Snippet</h5>
+            <input class="admin-form-control" @bind="_findSnippetTitle" placeholder="Enter snippet title..." autofocus @onkeydown="OnFindSnippetKeyDown" />
+            <div class="modal-actions">
+                <button class="admin-btn admin-btn-secondary" @onclick="CloseFindSnippetModal">Cancel</button>
+                <button class="admin-btn admin-btn-primary" @onclick="FindSnippet">Find</button>
             </div>
             @if (!string.IsNullOrEmpty(_findSnippetError))
             {
-                <div style="color:#d00;margin-top:10px;">@_findSnippetError</div>
+                <div class="modal-error">@_findSnippetError</div>
             }
         </div>
     </div>
@@ -239,19 +237,20 @@ else
 {
     <div class="modal-backdrop">
         <div class="modal-dialog">
-            <h5 style="margin-bottom:12px;">Find SessionDtos</h5>
-            <input class="form-control" @bind="_findSessionName" placeholder="Enter session name..." autofocus @onkeydown="OnFindSessionKeyDown" />
-            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;">
-                <button class="btn btn-secondary" @onclick="CloseFindSessionModal">Cancel</button>
-                <button class="btn btn-primary" @onclick="FindSession">Find</button>
+            <h5 class="modal-title">Find Session</h5>
+            <input class="admin-form-control" @bind="_findSessionName" placeholder="Enter session name..." autofocus @onkeydown="OnFindSessionKeyDown" />
+            <div class="modal-actions">
+                <button class="admin-btn admin-btn-secondary" @onclick="CloseFindSessionModal">Cancel</button>
+                <button class="admin-btn admin-btn-primary" @onclick="FindSession">Find</button>
             </div>
             @if (!string.IsNullOrEmpty(_findSessionError))
             {
-                <div style="color:#d00;margin-top:10px;">@_findSessionError</div>
+                <div class="modal-error">@_findSessionError</div>
             }
         </div>
     </div>
 }
+
 
 @code {
     private string _activeTab = "users";

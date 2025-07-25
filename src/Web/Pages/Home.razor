@@ -5,7 +5,7 @@
 
 @if (!_isLoaded)
 {
-    <div style="margin-top:50px; text-align:center;">
+    <div class="home-loading">
         <span>Loading...</span>
     </div>
 }
@@ -15,27 +15,24 @@ else if (!UserState.IsAuthenticated)
 }
 else
 {
-    <div class="userbar-container">
+    <div class="userbar">
         <img src="@($"/avatars/{UserState.User?.AvatarFileName ?? "default_avatar.png"}")"
-             class="rounded-circle" style="width:48px;height:48px;object-fit:cover;" />
-        <span class="fw-semibold profile-link" @onclick="GoToProfile" style="cursor:pointer;">@UserState.User?.Username</span>
+             class="userbar-avatar" />
+        <span class="userbar-username" @onclick="GoToProfile">@UserState.User?.Username</span>
 
-        <button class="btn btn-outline-danger btn-sm" style="margin-left:0.5rem;" @onclick="Logout">Exit</button>
+        @if (UserState.User?.IsAdmin == true)
+        {
+            <button class="userbar-admin-btn" @onclick="@(()=>Nav.NavigateTo("/admin"))">Admin Panel</button>
+        }
+
+        <button class="userbar-logout-btn" @onclick="Logout">Exit</button>
     </div>
-    
-    @if (UserState.User?.IsAdmin == true)
-    {
-        <button class="btn btn-warning btn-lg" @onclick="@(()=>Nav.NavigateTo("/admin"))">
-            Admin Panel
-        </button>
-    }
 
-
-    <div class="d-flex flex-column align-items-center justify-content-center" style="min-height:60vh;">
-        <h1 class="mb-4 mt-3">Welcome, @UserState.User?.Username!</h1>
-        <div class="d-flex gap-4">
-            <button class="btn btn-primary btn-lg" @onclick="@(()=>Nav.NavigateTo("/snippets"))">Go to Snippets</button>
-            <button class="btn btn-outline-primary btn-lg" @onclick="@(()=>Nav.NavigateTo("/sessions"))">Go to Sessions</button>
+    <div class="home-center">
+        <h1 class="home-welcome-title">Welcome, @UserState.User?.Username!</h1>
+        <div class="home-actions">
+            <button class="home-action-btn btn btn-primary" @onclick="@(()=>Nav.NavigateTo("/snippets"))">Go to Snippets</button>
+            <button class="home-action-btn btn btn-outline-primary" @onclick="@(()=>Nav.NavigateTo("/sessions"))">Go to Sessions</button>
         </div>
     </div>
 }
@@ -59,7 +56,6 @@ else
     {
         Nav.NavigateTo("/user/profile");
     }
-
 
     private async Task Logout()
     {
