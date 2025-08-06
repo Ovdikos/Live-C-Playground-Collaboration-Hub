@@ -19,13 +19,13 @@ public class GetSessionsWhereUserIsParticipantTests
     [Fact]
     public async Task Should_Return_Sessions_Where_User_Is_Participant()
     {
+        // TODO: need to fix this peace of test :), idk why, it's stop working
         var userId = Guid.NewGuid();
         var ownerId = Guid.NewGuid();
         var sessionId = Guid.NewGuid();
 
         using (var context = GetDbContext())
         {
-            // Users
             var owner = new User { Id = ownerId, Username = "owner", Email = "o@mail.com", PasswordHash = "hash" };
             var participantUser = new User { Id = userId, Username = "participant", Email = "p@mail.com", PasswordHash = "hash" };
             context.Users.AddRange(owner, participantUser);
