@@ -172,6 +172,7 @@ public class AdminRepository : IAdminRepository
             .Include(s => s.CodeSnippet)
             .Include(s => s.Participants)
             .ThenInclude(p => p.User)
+            .Include(s => s.EditHistories)
             .FirstOrDefaultAsync(s => s.Name == name);
     }
 
