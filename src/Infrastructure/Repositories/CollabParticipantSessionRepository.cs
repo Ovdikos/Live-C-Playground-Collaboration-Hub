@@ -5,12 +5,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
-public class CollabParticipantRepository : ICollabParticipantRepository
+public class CollabParticipantSessionRepository : ICollabParticipantSessionRepository
 {
     
     private readonly LivePlaygroundDbContext _context;
 
-    public CollabParticipantRepository(LivePlaygroundDbContext context)
+    public CollabParticipantSessionRepository(LivePlaygroundDbContext context)
     {
         _context = context;
     }
@@ -79,11 +79,11 @@ public class CollabParticipantRepository : ICollabParticipantRepository
 
     public async Task<CollabSession> UpdateSessionAsync(CollabSession session, SessionEditHistory history)
     {
-
+    
         _context.CollabSessions.Update(session);
         _context.SessionEditHistories.Add(history);
         await _context.SaveChangesAsync();
         return session;
-
+    
     }
 }

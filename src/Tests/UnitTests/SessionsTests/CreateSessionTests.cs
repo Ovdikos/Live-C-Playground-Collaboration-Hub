@@ -38,7 +38,7 @@ public class CreateSessionTests
             Owner = owner
         };
 
-        var repo = new CollabParticipantRepository(context);
+        var repo = new CollabParticipantSessionRepository(context);
         var result = await repo.CreateSessionAsync(session);
 
         result.Should().NotBeNull();

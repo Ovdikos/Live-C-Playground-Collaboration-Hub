@@ -39,7 +39,7 @@ public class GetCollabSessionByIdTests
         await context.CollabSessions.AddAsync(session);
         await context.SaveChangesAsync();
 
-        var repo = new CollabParticipantRepository(context);
+        var repo = new CollabParticipantSessionRepository(context);
 
         var result = await repo.GetByIdAsync(session.Id);
 
@@ -53,7 +53,7 @@ public class GetCollabSessionByIdTests
     public async Task Should_Return_Null_When_Session_Not_Found()
     {
         var context = GetDbContext();
-        var repo = new CollabParticipantRepository(context);
+        var repo = new CollabParticipantSessionRepository(context);
 
         var result = await repo.GetByIdAsync(Guid.NewGuid());
 

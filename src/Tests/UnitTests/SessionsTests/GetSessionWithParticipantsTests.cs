@@ -76,7 +76,7 @@ public async Task Should_Return_Session_With_Participants()
 
         await context.SaveChangesAsync();
 
-        var repo = new CollabParticipantRepository(context);
+        var repo = new CollabParticipantSessionRepository(context);
 
         var result = await repo.GetSessionWithParticipantsAsync(sessionId);
 
@@ -90,7 +90,7 @@ public async Task Should_Return_Session_With_Participants()
     public async Task Should_Return_Null_If_Session_Not_Exists()
     {
         var context = GetDbContext();
-        var repo = new CollabParticipantRepository(context);
+        var repo = new CollabParticipantSessionRepository(context);
 
         var result = await repo.GetSessionWithParticipantsAsync(Guid.NewGuid());
 

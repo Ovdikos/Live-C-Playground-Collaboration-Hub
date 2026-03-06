@@ -1,39 +1,33 @@
 ﻿using Application.DTOs.SessionDtos;
 using AutoMapper;
 using Core.Entities;
-using Infrastructure.DbContext;
+using Core.Interfaces;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Application.Features.CollabSessions.Commands.EditCollabSession;
 
 public class EditCollabSessionHandler : IRequestHandler<EditCollabSessionCommand, CollabSessionDto>
 {
-    private readonly LivePlaygroundDbContext _context;
+    private readonly ICollabParticipantSessionRepository _sessionRepo;
+    private readonly IUserRepository _userRepo;
     private readonly IMapper _mapper;
 
-    public EditCollabSessionHandler(LivePlaygroundDbContext db, IMapper mapper)
+    public EditCollabSessionHandler(ICollabParticipantSessionRepository sessionRepo, IUserRepository userRepo, IMapper mapper)
     {
-        _context = db;
+        _sessionRepo = sessionRepo;
+        _userRepo = userRepo;
         _mapper = mapper;
     }
 
     public async Task<CollabSessionDto> Handle(EditCollabSessionCommand request, CancellationToken cancellationToken)
     {
-        var session = await _context.CollabSessions
-            .Include(x => x.CodeSnippet)
-            .Include(x => x.Owner)
-            .Include(x => x.EditHistories)
-            .FirstOrDefaultAsync(x => x.Id == request.SessionId, cancellationToken);
+        var session = await _sessionRepo.GetByIdAsync(request.SessionId);
         
-        if (!session.IsActive) throw new UnauthorizedAccessException("SessionDtos is not active");
+        if (session == null) throw new Exception("Session not found ID: {request.SessionId} " );
         
-        if (session == null)
-            throw new Exception($"SessionDtos not found! Id: {request.SessionId}");
-
-        var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == request.EditedByUserId, cancellationToken);
-
+        if (!session.IsActive) throw new UnauthorizedAccessException("Session is not active");
+        
+        var user = await _userRepo.GetByIdAsync(request.EditedByUserId);
         if (user == null)
             throw new Exception($"Editing user not found! UserId: {request.EditedByUserId}");
 
@@ -52,7 +46,7 @@ public class EditCollabSessionHandler : IRequestHandler<EditCollabSessionCommand
         if (!string.IsNullOrWhiteSpace(request.Content))
         {
             if (session.CodeSnippet == null)
-                throw new Exception($"SessionDtos's CodeSnippet is null! SessionId: {session.Id}");
+                throw new Exception($"Session's CodeSnippet is null! SessionId: {session.Id}");
 
             if (session.CodeSnippet.Content != request.Content)
             {
@@ -61,11 +55,13 @@ public class EditCollabSessionHandler : IRequestHandler<EditCollabSessionCommand
             }
         }
 
+        SessionEditHistory? editHistory = null;
+
         if (isChanged || !string.IsNullOrWhiteSpace(request.Changes))
         {
             session.EditedAt = DateTime.UtcNow;
 
-            var editHistory = new SessionEditHistory
+            editHistory = new SessionEditHistory
             {
                 Id = Guid.NewGuid(),
                 SessionId = session.Id,
@@ -73,19 +69,11 @@ public class EditCollabSessionHandler : IRequestHandler<EditCollabSessionCommand
                 EditedAt = DateTime.UtcNow,
                 Changes = changesDesc.Trim()
             };
-            _context.Set<SessionEditHistory>().Add(editHistory);
         }
 
-        await _context.SaveChangesAsync(cancellationToken);
+        var updatedSession = await _sessionRepo.UpdateSessionAsync(session, editHistory);
 
-        var fullSession = await _context.CollabSessions
-            .Include(x => x.CodeSnippet)
-            .Include(x => x.Owner)
-            .Include(x => x.EditHistories)
-                .ThenInclude(h => h.EditedByUser)
-            .FirstOrDefaultAsync(x => x.Id == session.Id, cancellationToken);
-
-        return _mapper.Map<CollabSessionDto>(fullSession!);
+        return _mapper.Map<CollabSessionDto>(updatedSession);
     }
 }
 

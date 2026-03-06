@@ -50,7 +50,7 @@ public class UpdateSessionTests
 
         session.Name = "NewName";
 
-        var repo = new CollabParticipantRepository(context);
+        var repo = new CollabParticipantSessionRepository(context);
         var result = await repo.UpdateSessionAsync(session, history);
 
         result.Name.Should().Be("NewName");

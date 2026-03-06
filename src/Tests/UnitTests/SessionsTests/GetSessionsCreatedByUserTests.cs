@@ -64,7 +64,7 @@ public class GetSessionsCreatedByUserTests
 
         await context.SaveChangesAsync();
 
-        var repo = new CollabParticipantRepository(context);
+        var repo = new CollabParticipantSessionRepository(context);
         var result = await repo.GetSessionsCreatedByUserAsync(ownerId);
 
         _testOutputHelper.WriteLine($"[RESULT] Sessions found: {result.Count}");
@@ -82,7 +82,7 @@ public class GetSessionsCreatedByUserTests
     public async Task Should_Return_Empty_List_When_User_Has_No_Sessions()
     {
         var context = GetDbContext();
-        var repo = new CollabParticipantRepository(context);
+        var repo = new CollabParticipantSessionRepository(context);
     
         var result = await repo.GetSessionsCreatedByUserAsync(Guid.NewGuid());
     

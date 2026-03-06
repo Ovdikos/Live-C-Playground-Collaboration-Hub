@@ -7,10 +7,10 @@ namespace Application.Features.CollabSessions.Queries.GetCollabSessionsCreaterBy
 
 public class GetCollabSessionsCreatedByUserHandler : IRequestHandler<GetCollabSessionsCreatedByUserQuery, List<CollabSessionDto>>
 {
-    private readonly ICollabParticipantRepository _repo;
+    private readonly ICollabParticipantSessionRepository _repo;
     private readonly IMapper _mapper;
 
-    public GetCollabSessionsCreatedByUserHandler(ICollabParticipantRepository repo, IMapper mapper)
+    public GetCollabSessionsCreatedByUserHandler(ICollabParticipantSessionRepository repo, IMapper mapper)
     {
         _repo = repo;
         _mapper = mapper;

@@ -7,10 +7,10 @@ namespace Application.Features.CollabSessions.Queries.GetCollabSesssionsWhereUse
 
 public class GetCollabSessionsWhereUserIsParticipantHandler : IRequestHandler<GetCollabSessionsWhereUserIsParticipantQuery, List<CollabSessionDto>>
 {
-    private readonly ICollabParticipantRepository _repo;
+    private readonly ICollabParticipantSessionRepository _repo;
     private readonly IMapper _mapper;
 
-    public GetCollabSessionsWhereUserIsParticipantHandler(ICollabParticipantRepository repo, IMapper mapper)
+    public GetCollabSessionsWhereUserIsParticipantHandler(ICollabParticipantSessionRepository repo, IMapper mapper)
     {
         _repo = repo;
         _mapper = mapper;

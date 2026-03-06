@@ -26,7 +26,7 @@ builder.Services.AddDbContext<LivePlaygroundDbContext>(options =>
 builder.Services.AddScoped<ICodeSnippetRepository, CodeSnippetRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
-builder.Services.AddScoped<ICollabParticipantRepository, CollabParticipantRepository>();
+builder.Services.AddScoped<ICollabParticipantSessionRepository, CollabParticipantSessionRepository>();
 builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 
 

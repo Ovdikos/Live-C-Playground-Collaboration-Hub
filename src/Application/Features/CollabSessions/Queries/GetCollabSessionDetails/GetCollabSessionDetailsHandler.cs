@@ -7,10 +7,10 @@ namespace Application.Features.CollabSessions.Queries.GetCollabSessionDetails;
 
 public class GetCollabSessionDetailsHandler : IRequestHandler<GetCollabSessionDetailsQuery, CollabSessionDto>
 {
-    private readonly ICollabParticipantRepository _repo;
+    private readonly ICollabParticipantSessionRepository _repo;
     private readonly IMapper _mapper; 
 
-    public GetCollabSessionDetailsHandler(ICollabParticipantRepository repo, IMapper mapper)
+    public GetCollabSessionDetailsHandler(ICollabParticipantSessionRepository repo, IMapper mapper)
     {
         _repo = repo;
         _mapper = mapper;

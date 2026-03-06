@@ -2,7 +2,7 @@
 
 namespace Core.Interfaces;
 
-public interface ICollabParticipantRepository
+public interface ICollabParticipantSessionRepository
 {
     Task<CollabSession?> GetByIdAsync(Guid id);
     Task<List<CollabSession>> GetSessionsWhereUserIsParticipantAsync(Guid userId);

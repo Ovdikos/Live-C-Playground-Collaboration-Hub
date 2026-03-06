@@ -8,10 +8,10 @@ namespace Application.Features.CollabSessions.Commands.CreateCollabSession;
 
 public class CreateCollabSessionHandler : IRequestHandler<CreateSessionCommand, CollabSessionDto>
 {
-    private readonly ICollabParticipantRepository _repo;
+    private readonly ICollabParticipantSessionRepository _repo;
     private readonly IMapper _mapper;
 
-    public CreateCollabSessionHandler(ICollabParticipantRepository repo, IMapper mapper)
+    public CreateCollabSessionHandler(ICollabParticipantSessionRepository repo, IMapper mapper)
     {
         _repo = repo;
         _mapper = mapper;

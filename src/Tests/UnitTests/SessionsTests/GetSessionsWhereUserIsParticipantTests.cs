@@ -68,7 +68,7 @@ public class GetSessionsWhereUserIsParticipantTests
 
         using (var context = GetDbContext())
         {
-            var repo = new CollabParticipantRepository(context);
+            var repo = new CollabParticipantSessionRepository(context);
             var result = await repo.GetSessionsWhereUserIsParticipantAsync(userId);
 
             result.Should().NotBeNull();
@@ -82,7 +82,7 @@ public class GetSessionsWhereUserIsParticipantTests
     public async Task Should_Return_Empty_List_When_User_Not_Participant()
     {
         var context = GetDbContext();
-        var repo = new CollabParticipantRepository(context);
+        var repo = new CollabParticipantSessionRepository(context);
 
         var result = await repo.GetSessionsWhereUserIsParticipantAsync(Guid.NewGuid());
 
