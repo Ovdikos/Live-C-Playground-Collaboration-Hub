@@ -1,14 +1,15 @@
 ﻿using Application.DTOs.SessionDtos;
 using Application.Features.CollabSessions.Commands.CreateCollabSession;
 using Application.Features.CollabSessions.Commands.EditCollabSession;
+using Application.Features.CollabSessions.Commands.JoinCollabSession;
+using Application.Features.CollabSessions.Commands.LeaveCollabSession;
 using Application.Features.CollabSessions.Queries.GetCollabSessionsCreaterByUser;
 using Application.Features.CollabSessions.Queries.GetCollabSesssionsWhereUserIsParticipant;
-using AutoMapper;
-using Core.Entities;
-using Infrastructure.DbContext;
+using Application.Features.CollabSessions.Queries.GetSessionHistory;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using DeleteCollabSessionCommand = Application.Features.CollabSessions.Commands.DeleteCollabSession.DeleteCollabSessionCommand;
+using GetCollabSessionDetailsQuery = Application.Features.CollabSessions.Queries.GetCollabSessionDetails.GetCollabSessionDetailsQuery;
 
 namespace Web.Controllers;
 
@@ -16,6 +17,14 @@ namespace Web.Controllers;
 [Route("api/sessions")]
 public class SessionsController : ControllerBase
 {
+    
+    private readonly IMediator _mediator;
+
+    public SessionsController(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+    
     [HttpGet("participating")]
     public async Task<IActionResult> GetParticipating([FromServices] IMediator mediator, [FromQuery] Guid userId)
     {
@@ -45,19 +54,14 @@ public class SessionsController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetInfo([FromRoute] Guid id, [FromServices] LivePlaygroundDbContext db, [FromServices] IMapper mapper)
+    public async Task<IActionResult> GetInfo([FromRoute] Guid id)
     {
-        var session = await db.CollabSessions
-            .Include(x => x.CodeSnippet)
-            .Include(x => x.Owner)
-            .Include(x => x.EditHistories).ThenInclude(h => h.EditedByUser)
-            .Include(x => x.Participants).ThenInclude(p => p.User)
-            .FirstOrDefaultAsync(x => x.Id == id);
-
+        var session = await _mediator.Send(new GetCollabSessionDetailsQuery(id));
+        
         if (session == null)
             return NotFound();
 
-        return Ok(mapper.Map<CollabSessionDto>(session));
+        return Ok(session);
     }
 
     [HttpPost]
@@ -76,69 +80,55 @@ public class SessionsController : ControllerBase
     }
 
     [HttpGet("{id}/history")]
-    public async Task<IActionResult> GetHistory([FromRoute] Guid id, [FromServices] LivePlaygroundDbContext db, [FromServices] IMapper mapper)
+    public async Task<IActionResult> GetHistory([FromRoute] Guid id)
     {
-        var history = await db.SessionEditHistories
-            .Where(h => h.SessionId == id)
-            .Include(h => h.EditedByUser)
-            .OrderByDescending(h => h.EditedAt)
-            .ToListAsync();
-
-        return Ok(mapper.Map<List<SessionEditHistoryDto>>(history));
+        var history = await _mediator.Send(new GetSessionHistoryQuery(id));
+        return Ok(history);
     }
 
     [HttpPost("join")]
-    public async Task<IActionResult> Join([FromBody] JoinSessionDto dto, [FromServices] LivePlaygroundDbContext db)
+    public async Task<IActionResult> Join([FromBody] JoinSessionDto dto)
     {
-        var session = await db.CollabSessions
-            .Include(s => s.Participants)
-            .FirstOrDefaultAsync(s => s.JoinCode == dto.JoinCode);
-
-        if (session == null)
-            return NotFound();
-
-        if (session.Participants.Any(p => p.UserId == dto.UserId))
-            return BadRequest();
-
-        db.CollabParticipants.Add(new CollabParticipant
+        try
         {
-            Id = Guid.NewGuid(),
-            SessionId = session.Id,
-            UserId = dto.UserId,
-            JoinedAt = DateTime.UtcNow
-        });
-        await db.SaveChangesAsync();
-        return Ok();
+            await _mediator.Send(new JoinCollabSessionCommand(dto));
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpPost("leave")]
-    public async Task<IActionResult> Leave([FromBody] LeaveSessionDto dto, [FromServices] LivePlaygroundDbContext db)
+    public async Task<IActionResult> Leave([FromBody] LeaveSessionDto dto)
     {
-        var participant = await db.CollabParticipants
-            .FirstOrDefaultAsync(p => p.SessionId == dto.SessionId && p.UserId == dto.UserId);
-
-        if (participant == null)
-            return NotFound();
-
-        db.CollabParticipants.Remove(participant);
-        await db.SaveChangesAsync();
-        return Ok();
+        try
+        {
+            await _mediator.Send(new LeaveCollabSessionCommand(dto));
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete([FromRoute] Guid id, [FromQuery] Guid userId, [FromServices] LivePlaygroundDbContext db)
+    public async Task<IActionResult> Delete([FromRoute] Guid id, [FromQuery] Guid userId)
     {
-        var session = await db.CollabSessions
-            .FirstOrDefaultAsync(s => s.Id == id);
-
-        if (session == null)
-            return NotFound();
-
-        if (session.OwnerId != userId)
+        try
+        {
+            await _mediator.Send(new DeleteCollabSessionCommand(id, userId));
+            return Ok();
+        }
+        catch (UnauthorizedAccessException)
+        {
             return Forbid();
-
-        db.CollabSessions.Remove(session);
-        await db.SaveChangesAsync();
-        return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

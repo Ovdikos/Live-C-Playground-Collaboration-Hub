@@ -68,6 +68,15 @@ public class CollabParticipantSessionRepository : ICollabParticipantSessionRepos
             .FirstOrDefaultAsync(s => s.Id == sessionId);
     }
 
+    public async Task<List<SessionEditHistory>> GetCollabSessionHistoryAsync(Guid sessionId)
+    {
+        return await _context.SessionEditHistories
+                .Where(h => h.SessionId == sessionId)
+                .Include(h => h.EditedByUser)
+                .OrderByDescending(h => h.EditedAt)
+                .ToListAsync();
+    }
+
     public async Task<CollabSession> CreateSessionAsync(CollabSession session)
     {
         
@@ -85,5 +94,48 @@ public class CollabParticipantSessionRepository : ICollabParticipantSessionRepos
         await _context.SaveChangesAsync();
         return session;
     
+    }
+
+    public async Task AddParticipantByJoinCodeAsync(string joinCode, Guid userId)
+    {
+        var session = await _context.CollabSessions
+            .Include(s => s.Participants)
+            .FirstOrDefaultAsync(s => s.JoinCode == joinCode);
+
+        if (session == null) throw new Exception("Session not found!");
+        if (session.Participants.Any(p => p.UserId == userId)) throw new Exception("User is already a participant!");
+
+        _context.CollabParticipants.Add(new CollabParticipant
+        {
+            Id = Guid.NewGuid(),
+            SessionId = session.Id,
+            UserId = userId,
+            JoinedAt = DateTime.UtcNow
+        });
+    
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task RemoveParticipantAsync(Guid sessionId, Guid userId)
+    {
+        var participant = await _context.CollabParticipants
+            .FirstOrDefaultAsync(p => p.SessionId == sessionId && p.UserId == userId);
+
+        if (participant == null) throw new Exception("Participant not found in this session.");
+
+        _context.CollabParticipants.Remove(participant);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteSessionIfOwnerAsync(Guid sessionId, Guid userId)
+    {
+        var session = await _context.CollabSessions
+            .FirstOrDefaultAsync(s => s.Id == sessionId);
+
+        if (session == null) throw new Exception("Session not found!");
+        if (session.OwnerId != userId) throw new UnauthorizedAccessException("Only the owner can delete this session.");
+
+        _context.CollabSessions.Remove(session);
+        await _context.SaveChangesAsync();
     }
 }
