@@ -21,4 +21,15 @@ The project initially started with a Blazor Server frontend. It was great for ra
 I chose **Angular**. Why?
 Because the backend is built with clean architecture, CQRS (MediatR), and solid enterprise patterns in .NET 8. Angular mirrors that structured, opinionated, object-oriented vibe perfectly. I don't want to spend 3 hours picking npm packages just to build a login form🥲 I want a cohesive, robust framework that can handle complex features (like our real-time SignalR collaboration service) cleanly and predictably. 
 
+### Entry 1.1: The JSON Contract Strictness
 
+**Context:**
+While prepearing the backend for the Angular migration, I realized a subtle but critical issue. Blazor Server didn't care much about HTTP response body formatting because it operated over a SignalR circuit natively. However, Angular's `HttpClient` is strictly typed and expects valid JSON by default.
+
+**The Problem:**
+Several of my API endpoints were returning raw strings for errors (`return BadRequest(ex.Message);`) or empty bodies for success (`return Ok();`). If Angular receives the string "User not found!", it attempts to run `JSON.parse("User not found!")` and throws a parsing exception, masking the actual 400 Bad Request error from my application logic.
+
+**The Solution:**
+I refactored all controllers to adhere to a strict JSON contract. 
+* All errors are now wrapped in an anonymous object: `return BadRequest(new { message = ex.Message });`.
+* All parameter-less success responses return a standard confirmation: `return Ok(new { message = "Success" });`.
