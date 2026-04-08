@@ -35,7 +35,7 @@ public class SessionsController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(new { message = new { message = ex.Message } });
         }
     }
 
@@ -49,7 +49,7 @@ public class SessionsController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -59,7 +59,7 @@ public class SessionsController : ControllerBase
         var session = await _mediator.Send(new GetCollabSessionDetailsQuery(id));
         
         if (session == null)
-            return NotFound();
+            return NotFound(new {message = "Session info was not found"});
 
         return Ok(session);
     }
@@ -92,11 +92,11 @@ public class SessionsController : ControllerBase
         try
         {
             await _mediator.Send(new JoinCollabSessionCommand(dto));
-            return Ok();
+            return Ok(new {message = "Join session operation done successfully"});
         }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -106,11 +106,11 @@ public class SessionsController : ControllerBase
         try
         {
             await _mediator.Send(new LeaveCollabSessionCommand(dto));
-            return Ok();
+            return Ok(new {message = "Leave session operation done successfully"});
         }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -120,7 +120,7 @@ public class SessionsController : ControllerBase
         try
         {
             await _mediator.Send(new DeleteCollabSessionCommand(id, userId));
-            return Ok();
+            return Ok(new {message = "Delete session operation done successfully"});
         }
         catch (UnauthorizedAccessException)
         {
@@ -128,7 +128,7 @@ public class SessionsController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(new { message = ex.Message });
         }
     }
 }

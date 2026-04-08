@@ -37,7 +37,7 @@ public class SnippetsController : ControllerBase
     public async Task<IActionResult> Edit([FromServices] IMediator mediator, [FromRoute] Guid id, [FromBody] UpdateCodeSnippetCommand cmd)
     {
         if (id != cmd.Id)
-            return BadRequest();
+            return BadRequest(new {message = "Edit snippet operation done successfully"});
         await mediator.Send(cmd);
         return NoContent();
     }

@@ -39,7 +39,7 @@ public class AdminController : ControllerBase
 
         var userDetails = await mediator.Send(new GetUserDetailsQuery(username));
         if (userDetails == null)
-            return NotFound();
+            return NotFound(new {message = "User was not found"});
 
         return Ok(userDetails);
     }
@@ -51,7 +51,7 @@ public class AdminController : ControllerBase
 
         var adminEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
         var result = await mediator.Send(cmd with { AdminEmail = adminEmail });
-        return result ? Ok() : NotFound();
+        return result ? Ok(new {message = "User successfully blocked"}) : NotFound(new {message = "User not found"});
     }
 
     [HttpDelete("user/{userId}")]
@@ -60,7 +60,7 @@ public class AdminController : ControllerBase
         if (!IsAdmin()) return Forbid();
 
         var result = await mediator.Send(new DeleteUserCommand(userId));
-        return result ? Ok() : NotFound();
+        return result ? Ok(new {message = "User successfully deleted"}) : NotFound(new {message = "User not found"});
     }
 
     [HttpGet("snippets")]
@@ -93,7 +93,7 @@ public class AdminController : ControllerBase
         if (!IsAdmin()) return Forbid();
         var snippet = await mediator.Send(new GetSnippetByTitleQuery(title));
         if (snippet == null)
-            return NotFound();
+            return NotFound(new {message = "User not found"});
         return Ok(snippet);
     }
 
@@ -102,8 +102,8 @@ public class AdminController : ControllerBase
     {
         if (!IsAdmin()) return Forbid();
         var result = await mediator.Send(new UpdateSnippetCommand(snippet));
-        if (!result) return BadRequest();
-        return Ok();
+        if (!result) return BadRequest(new {message = "Snippet update failed"});
+        return Ok(new {message = "Snippet successfully updated"});
     }
 
     [HttpDelete("snippet/{id}")]
@@ -112,9 +112,9 @@ public class AdminController : ControllerBase
         if (!IsAdmin()) return Forbid();
 
         var deleted = await mediator.Send(new DeleteSnippetCommand(id));
-        if (!deleted) return NotFound();
+        if (!deleted) return NotFound(new {message = "Can not  find snippet with provided id"});
 
-        return Ok();
+        return Ok(new {message = "Snippet successfully deleted"});
     }
 
     [HttpGet("session")]
@@ -123,7 +123,8 @@ public class AdminController : ControllerBase
         if (!IsAdmin()) return Forbid();
 
         var session = await mediator.Send(new GetCollabSessionDetailsQuery(name));
-        if (session == null) return NotFound();
+        if (session == null) return NotFound(new {message = "Can not found session with provided name"});
+        return Ok(session);
 
         return Ok(session);
     }
@@ -133,7 +134,7 @@ public class AdminController : ControllerBase
     {
         if (!IsAdmin()) return Forbid();
         var updated = await mediator.Send(new UpdateCollabSessionCommand(dto));
-        return updated ? Ok() : BadRequest();
+        return updated ? Ok(new {message = "Session updated successfully"}) : BadRequest(new {message = "Session update failed"});
     }
 
     [HttpDelete("session/{name}")]
@@ -142,7 +143,7 @@ public class AdminController : ControllerBase
         if (!IsAdmin()) return Forbid();
 
         var deleted = await mediator.Send(new DeleteCollabSessionCommand(name));
-        if (!deleted) return NotFound();
+        if (!deleted) return NotFound(new {message = "Can not find session with provided name"});
 
         return Ok();
     }
