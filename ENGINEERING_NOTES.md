@@ -76,3 +76,14 @@ By injecting the `AuthService` directly into the interceptor function using the 
 
 The interceptor was then registered seamlessly in the `app.config.ts` using `provideHttpClient(withInterceptors([jwtInterceptor]))`.
 
+#### Entry 2.2.1: The Empty Environment Trap
+
+**Context:**
+Ran `ng serve` and got a hit in a face with error `TS2339: Property 'apiUrl' does not exist on type '{}'`. 
+
+**The Problem:**
+When running `ng generate environments`, Angular CLI creates the necessary boilerplate files but doesn't automatically populate them with the custom properties used in the services. Since `AuthService` was trying to access `environment.apiUrl` while the `environment` object was effectively empty, the TS compiler threw an error during the static analysis phase.
+
+**The Solution:**
+Populated both `environment.ts` and `environment.development.ts` with the required `apiUrl` and `production` flags. 
+
