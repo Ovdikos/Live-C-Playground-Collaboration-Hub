@@ -21,11 +21,11 @@ public class UserProfileController : ControllerBase
         var userIdStr = User.Claims
             .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
         if (userIdStr == null || !Guid.TryParse(userIdStr, out var userId))
-            return Unauthorized();
+            return Unauthorized(new {message = "Authorization failed"});
 
         var user = await repo.GetByIdAsync(userId);
         if (user == null)
-            return NotFound();
+            return NotFound(new {message = "Can not find user for updating data"});
 
         if (dto.Username != user.Username && await repo.GetByUsernameOrEmailAsync(dto.Username) is not null)
             return BadRequest("Login already taken");

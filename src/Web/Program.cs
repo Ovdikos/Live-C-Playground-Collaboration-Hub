@@ -79,6 +79,18 @@ builder.Services.AddAuthentication("Bearer")
 builder.Services.AddControllers();
 
 
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngularClient", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
@@ -90,6 +102,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseCors("AllowAngularClient");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
