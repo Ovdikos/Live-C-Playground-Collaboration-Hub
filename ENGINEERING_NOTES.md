@@ -35,7 +35,7 @@ I refactored all controllers to adhere to a strict JSON contract.
 * All parameter-less success responses return a standard confirmation: `return Ok(new { message = "Success" });`.
 
 
-### Entry 2: Setting the Foundation - The LIFT Architecture
+## Entry 2: Setting the Foundation - The LIFT Architecture
 
 **Context:**
 Initializing a new frontend project is like laying the foundation of a house. If you mess it up, everything you build on top of it will eventually collapse into a spaghetti-code nightmare. Angular is highly opinionated, but it still leaves folder structure up to the developer. 
@@ -50,3 +50,16 @@ Here is the blueprint for `src/app`:
 
 **Why it matters:**
 In Blazor Server, everything was somehow grouped by Pages and shared components in a flat manner. As the SPA grows, lazy loading becomes critical for performance. This Feature-Driven structure ensures that when a user navigates to `/snippets`, Angular only loads the `snippets` feature bundle, keeping the initial bundle size incredibly small and fast.
+
+### Entry 2.1: Building from the Bottom-Up (Data before UI)
+
+**Context:**
+The tempting next step in a migration is to just copy-paste the HTML/CSS from Blazor `.razor` files into Angular components. However, this is a trap. Angular is strictly typed via TypeScript. If the components don't have the underlying models and services to bind to, the compiler will drown in errors.
+
+**The Solution:**
+I am building the app **Bottom-Up**:
+1. **Models (DTOs):** Recreated the C# DTOs (e.g., `UserDto`, `LoginResultDto`) as TypeScript interfaces to ensure strict API contracts.
+2. **State Management (`AuthService`):** In Blazor, I used a custom `UserState` class and `LocalStorageService`. In Angular, I implemented a singleton `AuthService` using RxJS `BehaviorSubject`. 
+
+**Why BehaviorSubject?**
+Unlike a standard variable, a `BehaviorSubject` holds the current state (the logged-in user) and emits it immediately to any new subscribers. This means our Navbar, Profile page, and Route Guards can all reactively listen to `authService.currentUser$` and update the UI instantly when the user logs in or out, without needing manual page refreshes or complex event emitters. We also adopted the modern `inject(HttpClient)` pattern over constructor injection for cleaner, more readable code.
