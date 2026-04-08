@@ -63,3 +63,16 @@ I am building the app **Bottom-Up**:
 
 **Why BehaviorSubject?**
 Unlike a standard variable, a `BehaviorSubject` holds the current state (the logged-in user) and emits it immediately to any new subscribers. This means our Navbar, Profile page, and Route Guards can all reactively listen to `authService.currentUser$` and update the UI instantly when the user logs in or out, without needing manual page refreshes or complex event emitters. We also adopted the modern `inject(HttpClient)` pattern over constructor injection for cleaner, more readable code.
+
+### Entry 2.2: Functional Interceptors & App Configuration
+
+**Context:**
+We need to automatically attach the JWT token to all outgoing HTTP requests and globally catch the standardized JSON errors we configured earlier.
+
+**The Decision:**
+Instead of using the legacy class-based `HttpInterceptor` approach (which required multi-provider boilerplate in an `NgModule`), I implemented a **Functional Interceptor** (`HttpInterceptorFn`). This is the modern standard for Standalone Angular applications. 
+
+By injecting the `AuthService` directly into the interceptor function using the `inject()` token, we cleanly retrieve the JWT and clone the request. Furthermore, the `catchError` RxJS pipe intercepts any 400/401/403 responses, extracts the `error.message` from our C# backend, and handles automatic logouts if a 401 Unauthorized is detected.
+
+The interceptor was then registered seamlessly in the `app.config.ts` using `provideHttpClient(withInterceptors([jwtInterceptor]))`.
+
