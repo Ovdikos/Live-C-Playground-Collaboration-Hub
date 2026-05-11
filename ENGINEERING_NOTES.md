@@ -87,3 +87,17 @@ When running `ng generate environments`, Angular CLI creates the necessary boile
 **The Solution:**
 Populated both `environment.ts` and `environment.development.ts` with the required `apiUrl` and `production` flags. 
 
+
+#### Entry 2.2.2: Functional Route Guards for Security
+
+**Context:**
+Now that we have the `AuthService` handling the state and the `JwtInterceptor` securing our HTTP traffic, we need a way to protect specific UI routes. Users shouldn't access the dashboard or editor without a valid session.
+
+**The Decision:**
+I implemented a modern **Functional Guard** (`authGuard`) using `CanActivateFn`.
+
+**Why Functional over Class-based?**
+In older Angular versions, guards were bulky classes that required constructor injection. Functional guards are much lighter and align with the Standalone Components philosophy. I used the `inject()` function to grab dependencies (`AuthService` and `Router`) directly.
+
+The logic is simple: if `getToken()` returns a value, navigation proceeds. If not, the user is kicked back to `/login`, but with a `returnUrl` parameter. This allows us to redirect them back to exactly where they wanted to go after they successfully log in.
+
