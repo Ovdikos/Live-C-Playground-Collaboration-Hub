@@ -1,0 +1,53 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <h2>Welcome to Live Collaboration</h2>
+    <p class="subtitle">Please log in to your account</p>
+
+    <div class="error-alert" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+      <div class="form-group">
+        <label for="login">login</label>
+        <input
+          type="text"
+          id="login"
+          formControlName="login"
+          placeholder="Enter your login"
+          [class.is-invalid]="loginForm.get('login')?.invalid && loginForm.get('login')?.touched">
+
+        <span class="error-text" *ngIf="loginForm.get('login')?.invalid && loginForm.get('login')?.touched">
+          login is required
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          placeholder="Enter your password"
+          [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+
+        <span class="error-text" *ngIf="loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched">
+          Password is required
+        </span>
+        <span class="error-text" *ngIf="loginForm.get('password')?.hasError('minlength') && loginForm.get('password')?.touched">
+          Password must be at least 6 characters
+        </span>
+      </div>
+
+      <button type="submit" class="btn-submit" [disabled]="isLoading">
+        {{ isLoading ? 'Logging in...' : 'Log In' }}
+      </button>
+
+    </form>
+
+    <div class="auth-footer">
+      Don't have an account? <a routerLink="/register">Register here</a>
+    </div>
+  </div>
+</div>

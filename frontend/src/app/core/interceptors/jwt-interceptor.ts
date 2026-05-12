@@ -1,7 +1,7 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
-import { AuthService } from '../services/auth';
+import { AuthService } from '../services/auth.service';
 
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
@@ -22,15 +22,16 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
 
       if (error.error && error.error.message) {
         errorMsg = error.error.message;
-      } else if (error.status === 401) {
+      }
+      else if (typeof error.error === 'string') {
+        errorMsg = error.error;
+      }
+      else if (error.status === 401) {
         errorMsg = 'Unauthorized. Please log in again.';
         authService.logout();
-      } else if (error.status === 403) {
-        errorMsg = 'You do not have permissions for this action.';
       }
 
       console.error('HTTP Error:', errorMsg);
-
       return throwError(() => new Error(errorMsg));
     })
   );

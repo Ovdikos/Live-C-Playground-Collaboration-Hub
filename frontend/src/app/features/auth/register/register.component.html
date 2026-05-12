@@ -1,0 +1,63 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <h2>Create an Account</h2>
+    <p class="subtitle">Join Live Collaboration Playground</p>
+
+    <div class="error-alert" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" formControlName="username" placeholder="Choose a username"
+               [class.is-invalid]="registerForm.get('username')?.invalid && registerForm.get('username')?.touched">
+
+        <div *ngIf="registerForm.get('username')?.invalid && registerForm.get('username')?.touched">
+          <span class="error-text" *ngIf="registerForm.get('username')?.hasError('required')">Username is required.</span>
+          <span class="error-text" *ngIf="registerForm.get('username')?.hasError('minlength')">Minimum length is 3.</span>
+          <span class="error-text" *ngIf="registerForm.get('username')?.hasError('pattern')">Must be alphanumeric (latin letters, numbers, underscore).</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" formControlName="email" placeholder="Enter your email"
+               [class.is-invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+
+        <div *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+          <span class="error-text" *ngIf="registerForm.get('email')?.hasError('required')">Email is required.</span>
+          <span class="error-text" *ngIf="registerForm.get('email')?.hasError('email')">Please enter a valid email.</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" formControlName="password" placeholder="Create a strong password"
+               [class.is-invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+
+        <div *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+          <span class="error-text" *ngIf="registerForm.get('password')?.hasError('required')">Password is required.</span>
+          <span class="error-text" *ngIf="registerForm.get('password')?.hasError('pattern')">
+            Must contain at least 8 characters, one uppercase, one lowercase, one number, and one special character.
+          </span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="avatar">Avatar (Optional)</label>
+        <input type="file" id="avatar" (change)="onFileSelected($event)" accept="image/png, image/jpeg, image/jpg">
+      </div>
+
+      <button type="submit" class="btn-submit" [disabled]="isLoading">
+        {{ isLoading ? 'Registering...' : 'Register' }}
+      </button>
+
+    </form>
+
+    <div class="auth-footer">
+      Already have an account? <a routerLink="/login">Log in here</a>
+    </div>
+  </div>
+</div>
