@@ -45,7 +45,7 @@ public class AuthController : ControllerBase
         var result = await mediator.Send(qry);
 
         if (!result.Success)
-            return BadRequest(new { error = result.Error });
+            return BadRequest(new { message = result.Error });
 
         var token = jwt.GenerateToken(result.User!);
         result.Token = token;

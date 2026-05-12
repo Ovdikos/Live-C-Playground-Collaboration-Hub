@@ -10,8 +10,8 @@ export interface User {
 
 // LoginUserDto
 export interface LoginRequest {
-  username: string;
-  passwordHash: string;
+  login: string;
+  password: string;
 }
 
 // RegisterUserDto
